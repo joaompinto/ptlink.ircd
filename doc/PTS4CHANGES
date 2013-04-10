@@ -1,0 +1,3 @@
+TS_CURRENT 9
+  Added NJOIN/NNICK to propagate nicks/chans during netjoin
+  Added RNOTICE to send LNOTICEs to a remote server

@@ -1,0 +1,20 @@
+TS version info
+---------------
+Version	Description
+10
+	We now send NJOIN/NNICK for netjoin raws
+ 9
+	Added NJOIN/NNICK support propagate nicks/chans during netjoin
+	Added RNOTICE to send LNOTICEs to a remote server
+----
+N/A
+----
+
+ 6  	
+	Support for '.' as chamonde 'a' on SJOIN nick prefix
+	Removed all OLD_TS support
+		
+ 5 		
+	Most OLD_TS removed
+
+

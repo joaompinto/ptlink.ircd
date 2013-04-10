@@ -1,0 +1,87 @@
+ *****************************************************************
+ * http://www.ptlink.net/Coders - Coders@PTlink.net              *
+ *****************************************************************
+
+ TO DO
+==================================================================
+  chanmodes :	+a, +q
+  /DCONF change option value
+==================================================================
+
+==================================================================
+ PTlink6.0.0 (04 Mar 2001)
+================================================================== 
+REMOVED
+  SEND_UMODES, ALL_UMODES are passed between servers now
+  umode +n (nick change notices) code
+  botcheck code and B-Lines
+  IP_SPOOFING/IP_HIDING code for client lines
+  m_operwall
+
+ADDED
+  OperByPass key for IRC Opers
+  m_dconf for dynamic conf handling
+  m_zombie, m_unzombie, m_dccblock, m_dccdeny
+  m_samode (allowed for global IRC opers)
+  RamdomHost on server full/unauthorized message
+  m_ircops, m_map
+  nospam mode (+S) using SpamWord conf directive
+  no colors channel mode (+c)
+  AllowChanCTCP to block channel CTCP's from non ops
+  reason on cannot to send message
+  +O , +A channel modes
+	(need to be oper to invite someone to +O/+A chans)
+  m_help -> m_helpsys
+  cache clear on /REHASH DNS
+  watch list from (from Bahamut)
+  supported features numeric 005 (from Hybrid7)
+  silence list (from Bahamut)
+  SIGSEGV handler
+  m_gline/m_ungline compatible with PTlink5 
+	with configurable GLineOthersReason message
+    real host and spoofed host match
+  server version on SERVER message
+  host spoofing, m_newhost
+  doc/PTS4.txt with our IRC protocol (extensions)
+  /whois replies
+	RPL_WHOISHELPOP, RPL_WHOISIDENTIFIED
+  +T/+N/+a user modes set from services only
+  Server Admin flag (A) on .conf flags
+  chanmode +r to mark channel as registered
+  chanmode +R to restrict channel join to registered nicks
+  example.conf.short for default install
+  services aliases with excessive usage protection
+  m_svsnick with TS check and nick delay
+  m_svsmode with TS check
+  chanmode +a (handled as +v for now)
+  masked hostname support (PTS4)
+  support for OLD_TS servers for remote JOIN/MODE, DF NICK's
+  globops (bering forwared to wallops)
+  sendto_nomatch_cap_servs function
+  
+CHANGED
+  m_topic will use ts info for inter server message
+  all stats are now oper only
+  opers.txt to helpsys format
+  sendto_ops will now send for all local opers (not only +s)
+  Fixed bug on remote m_join handling for #chan1,#chan2
+  Invited users can always join channel (except with +k) 
+  #ifdef HUB moved to main.dconf
+  do not accept JOIN 0 from local clients
+  binary full path is retrieved on runtime startup
+  whois (will show real hostname for opers)
+  ZIPLINKS will be used for 'C' lines, instead of 'c' lines (TS4)	
+  +w (wallops system) 
+	only +ow and servers can send WALLOPS
+	only +ow users will receive WALLOPS
+	+w for normal clients will have no functionality
+  ircd_defs.h
+	NICKLEN		20
+	TOPICLEN	300	
+  tools/install_ircd
+    kill running ircd and run the new after install    
+	version patchlevel stored in on DPATH version.info
+	general layout
+  some configure.in settings (default install path...)
+
+---- ircd-hybrid6 ---

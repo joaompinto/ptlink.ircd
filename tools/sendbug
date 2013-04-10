@@ -1,0 +1,38 @@
+#!/bin/sh
+# $Id:
+VERSION=`cat version.info`
+if [ -r ircd.core ] ; then
+	CORE=ircd.core
+fi
+if [ -r core ] ; then
+	CORE=core
+fi
+if [ -z $CORE ] ; then
+	echo "No core dump found for bug report!"
+	exit
+fi
+GDBPATH=`which gdb 2> /dev/null`
+if [ -z $GDBPATH ] ; then
+	echo "gdb not available to debug core dump!"
+	exit
+fi
+gdb -c $CORE ./ircd <<EOT > bug.report 2>&1
+bt
+
+quit
+EOT
+GDBPATH=`which sendmail 2> /dev/null`
+if [ -z $GDBPATH ] ; then
+    if [ -x /usr/sbin/sendmail ] ; then
+	GDBPATH=/usr/sbin/sendmail
+    fi
+fi
+if [ -z $GDBPATH ] ; then
+	echo "sendmail not available to send the bug report!"
+	echo "Please send the file bug.report to Coders@PTlink.net"
+	exit
+fi
+$GDBPATH -F"Bug Report - $VERSION" coders@ptlink.net < bug.report
+echo "Bug info was sent to Coders@PTlink.net"
+mv $CORE $CORE.old
+

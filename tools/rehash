@@ -1,0 +1,20 @@
+#!/bin/sh
+
+#### Please Change the location if it's wrong
+PIDNUM=$HOME/ircd/var/ircd.pid
+
+########
+# DO NOT TOUCH THE BELOW CODE IF YOU DON'T KNOW WHAT YOU ARE DOING!!!
+
+if [ -r "$PIDNUM" ]; then
+    PID1=`cat $PIDNUM`
+    if `kill -CHLD $PID1 > /dev/null 2>&1`; then
+	kill -HUP $PID1
+	echo "IRCd succesfully rehashed"
+    else
+	echo "IRCd is not running, can't rehash it"
+    fi
+else
+    echo "IRCd is not running, can't rehash it"
+fi
+echo " " 

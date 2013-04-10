@@ -1,0 +1,169 @@
+/* include/setup.h.in.  Generated from autoconf/configure.in by autoheader.  */
+
+/* BSD Signals */
+#undef BSD_RELIABLE_SIGNALS
+
+/* chroot dir */
+#undef CHROOT_DIR
+
+/* flooddelay support */
+#undef FLOOD_DELAY
+
+/* halfops support */
+#undef HALFOPS
+
+/* Have chroot */
+#undef HAVE_CHROOT
+
+/* Define to 1 if you have the <crypt.h> header file. */
+#undef HAVE_CRYPT_H
+
+/* Define to 1 if you have the <errno.h> header file. */
+#undef HAVE_ERRNO_H
+
+/* Define to 1 if you have the <getopt.h> header file. */
+#undef HAVE_GETOPT_H
+
+/* Define to 1 if you have the `getpagesize' function. */
+#undef HAVE_GETPAGESIZE
+
+/* Build with GNUTLS support */
+#undef HAVE_GNUTLS
+
+/* Define to 1 if you have the <gnutls/gnutls.h> header file. */
+#undef HAVE_GNUTLS_GNUTLS_H
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the `crypt' library (-lcrypt). */
+#undef HAVE_LIBCRYPT
+
+/* Define to 1 if you have the `descrypt' library (-ldescrypt). */
+#undef HAVE_LIBDESCRYPT
+
+/* Define to 1 if you have the `nsl' library (-lnsl). */
+#undef HAVE_LIBNSL
+
+/* Define to 1 if you have the `resolv' library (-lresolv). */
+#undef HAVE_LIBRESOLV
+
+/* Define to 1 if you have the `socket' library (-lsocket). */
+#undef HAVE_LIBSOCKET
+
+/* Define to 1 if you have the `z' library (-lz). */
+#undef HAVE_LIBZ
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have a working `mmap' system call. */
+#undef HAVE_MMAP
+
+/* Build with OpenSSL support */
+#undef HAVE_OPENSSL
+
+/* Define to 1 if you have the <openssl/err.h> header file. */
+#undef HAVE_OPENSSL_ERR_H
+
+/* Define to 1 if you have the <openssl/ssl.h> header file. */
+#undef HAVE_OPENSSL_SSL_H
+
+/* Build with SSL/TLS support */
+#undef HAVE_SSL
+
+/* Define to 1 if you have the <stddef.h> header file. */
+#undef HAVE_STDDEF_H
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/param.h> header file. */
+#undef HAVE_SYS_PARAM_H
+
+/* Define to 1 if you have the <sys/select.h> header file. */
+#undef HAVE_SYS_SELECT_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Hebrew Support */
+#undef HEBREW_SUPPORT
+
+/* IPv6 support */
+#undef IPV6
+
+/* ircd gid */
+#undef IRC_GID
+
+/* ircd uid */
+#undef IRC_UID
+
+/* Korean support */
+#undef KOREAN
+
+/* BSD */
+#undef NBLOCK_BSD
+
+/* Posix */
+#undef NBLOCK_POSIX
+
+/* SysV */
+#undef NBLOCK_SYSV
+
+/* own crypt */
+#undef OWN_CRYPT
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Pidfile */
+#undef PIDFILE
+
+/* POSIX signals */
+#undef POSIX_SIGNALS
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* SYSV_UNRELIABLE_SIGNALS */
+#undef SYSV_UNRELIABLE_SIGNALS
+
+/* Use adns */
+#undef USE_ADNS
+
+/* Use poll() */
+#undef USE_POLL
+
+/* Use setenv() */
+#undef USE_SETENV
+
+/* utf-8 support */
+#undef UTF8

@@ -1,0 +1,322 @@
+*
+Oper Commands: (+ indicates that /quote must be used with ircII)
+
+    Available Help Topics
+    ---------------------
+    umodes    - users modes
+    chanmodes - channel modes
+    imodes    - information modes
+    routing commands (connect,squit)
+
+    Info commands
+    -------------
+    stats - available stats
+    trace - trace connections
+    htm   - High Traffic Mode command
+    set   - set options
+    map     - dump network map
+
+    Banning users
+    -------------
+    kill   - disconnect user 
+    klines - local ircd bans
+    dlines - ip based klines
+    glines - network wide bans
+
+    Troubleshooting
+    ----------------
+    /msg $mask - send a message to all users on servers matching mask
+    /msg #mask - send a message to all users with hosts matching mask
+    lnotice  - send a local server notice
+    rnotice  - send a server notice to remote server
+    zombie   - user cannot send messages
+    dccdeny  - user cannot DCC SEND
+    whois    - whois search functionality
+    SAMODE     - force mode change on channel
+    rehash   - rehash options
+    hvc      - enable/disable human verification code
+*umodes
+  a - services admin
+  A - server admin
+  B - user connecting from a bot list entry
+  H - hide oper status on whois from normal users
+  o - global IRC operator
+  O - local IRC operator
+  T - technical admin
+  v - no DCC send
+  w - can send/receive wallops (non opers will not receive wallops)
+  y - will receive a server notice when someone /whois you
+  z - user is zombie (cannot send messages)
+*chanmodes
+  O - IRC Operators only
+  A - Server Administrators only
+*imodes
+  b - bots detection
+  c - client connections/exits
+  k - kills
+  r - client rejections
+  g - generic
+  v - svlines
+  y - spy mode (info/stats)
+  d - debug
+  e - external connects/squits
+  f - server is full
+*zombie
+ + ZOMBIE       - ZOMBIE <nick> [reason]
+                  Set <nick> user mode (+z) cannot send messages
+                  [reason].
+ + UNZOMBIE     - UNZOMBIE <nick>
+                  Remove <nick> user mode (+z)
+*dccdeny
+ + DCCDENY      - DCCDENY <nick> [reason]
+                  Set <nick> user mode (+v) cannot DCC SEND
+                  [reason].
+ + DCCALLOW     - DCCALLOW <nick>
+                  Remove <nick> user mode (-v)
+*whois
+ WHOIS          - WHOIS <nick*> | <user*@host*> | <$server*>
+                  Displays whois info for matched users
+                  (* indicates you can use wild cards)
+*lnotice
+  LNOTICE       - LNOTICE :text
+                  Sends a server notice to all users on the local server
+*rnotice
+  RNOTICE       - RNOTICE server :text
+                  Sends a server notice to all users on a given server
+*squit
+  SQUIT         - SQUIT <server> [reason]
+                  Splits <server> away from your side of the net with
+                  [reason].
+*connect
+  CONNECT       - CONNECT <server_A> [port] [server_B]
+                  When [server_B] is used, CONNECT asks [server_B] to
+                  connect to <server_A>.  Global Opers only.
+
+                  When [server_B] is not used, CONNECT tries to connect
+                  your server to <server_A>.  Local and Global Opers.
+
+                  When [port] is used, the connection will be attempted
+                  to [port].
+                  When [port] is not used, 6667 is used as a default.
+*trace
+  TRACE         - TRACE [server|nick]
+                  TRACE shows client info about [server|nick] or about
+                  the server you are on if no [server|nick] is given.
+
+                  All users that use TRACE can see the path to
+                  [server|nick] if given and all servers and opers
+                  connected, as well as the connection class they
+                  fall into.
+
+                  Opers can see all clients connected to a server
+                  with TRACE as well as the connection class they
+                  fall into.
+ + LTRACE        - LTRACE [server|nick]
+                  -- If compiled with LTRACE --
+                  Displays only Oper, Serv, Link, and Class reports even if
+                  the O-line is active.  Useful for just showing pertinent
+                  info of a specific server.  Note however that if the
+                  target server is not running this option then you will
+                  still receive a normal trace output.
+*kill
+  KILL <nick> <reason>
+     
+  Disconnects user <nick> from the IRC server he/she
+  is connected to with reason <reason>.
+  Local Opers can only kill clients on his/her server.
+  Global Opers can kill clients on any server on the
+  IRC network.
+*line 
+  E: exemption from bans (exempt from K/D/G lines)
+  F: exemption from connection limits
+  K: Kill line (users from that mask will be killed on connect)
+  X: Warn/kill lines for gecos field match
+*klines
++ KLINE         - KLINE <nick|user@host> :[reason]
+                  Adds a KLINE to the ircd.conf or klines.conf file which
+                  will ban the specified user from using that server.
+                  The banned client will receive a message saying he/she
+                  is banned with reason [reason]
+
+                  KLINE user@ip.ip.ip.ip :[reason]
+                  will kline the user at the unresolved ip.
+                  ip.ip.ip.ip can be in CIDR form i.e. 192.168.0.0/24
+                  or 192.168.0.* (which is converted to CIDR form internally)
+
+                  For a temporary KLINE, length of kline is given in
+                  minutes as the first parameter i.e.
+                  KLINE 10 <nick|user@host> :cool off for 10 minutes
+
++ UNKLINE       - UNKLINE <user@host>
+                  Will attempt to unkline the given <user@host>
+                  Will unkline a temporary kline.
+*dlines
++ DLINE         - DLINE <nick|ip> :[reason]
+                  Adds a DLINE to the ircd.conf or klines.conf file
+                  which will deny any connections from the IP address
+                  of the banned client.  The banned client will receive
+                  a message saying he/she is banned with reason [reason]
+
+                  In order to use <nick> rather than <ip>, <nick> must
+                  be on your server.
+*glines
+
+                  Adding a gline will disconnect all users matching the
+                  gline mask, and will forbid them to connect
+                  for the specified time (default in seconds),
+                  minutes, hours or days.
+    
+                  Adding glines
+                  /GLINE user@host time[m|h|d] :reason
+                  /GLINE nick time[m|h|d] :reason
+                  /GLINE #chan  time[m|h|d] :reason
+                  
+                  Removing glines
+                  /UNGLINE user@host | ALL
+
+                  Listing glines
+                  /STATS G
+                     or
+                  /GLINE LIST mask
+*zlines
+
+                  Adding a zline will block any incoming connections from one host
+                  for the specified time (default in seconds),
+                  minutes, hours our days.
+				  
+				  NOTE: Existing connections from the specified host will not be closed,
+				  for that purpose use glines.
+    
+                  Adding zlines
+ + ZLINE user@host time[m|h|d] :reason
+
+                  Removing zlines
+                  + UNZLINE user@host
+
+                  Listing zlines
+                  /stats Z
+	
+*htm
++ HTM           - HTM [option]
+                  When no [option] is given, HTM shows the current
+                  High Traffic Mode rate and whether HTM is on or off.
+
+                  [option] can be one of the following:
+                    ON        - Forces High Traffic Mode to be on.  With
+                                this on, ircd is more efficient in
+                                reading server-to-server traffic and
+                                oper traffic, but will be less efficient
+                                than normal with normal client traffic.
+                    OFF       - Forces High Traffic Mode to be off.
+                                (see above)
+                    TO <rate> - Sets the High Traffic Mode rate to
+                                <rate>.  Ircd will automatically go
+                                into High Traffic Mode when <rate>
+                                is reached, and will automatically turn
+                                it off when things calm down.
+                    QUIET     - When set, ircd will not notify opers
+                                when it goes into and out of High
+                                Traffic Mode.
+                    NOISY     - When set, ircd will notify opers
+                                when it goes into and out of High
+                                Traffic Mode.
+*set
++ SET           - SET <option> <value>
+                  <option> can be one of the following:
+                    LOG       - Sets the Logging level for what is logged
+                                to ircd.log and syslog.
+                    MAX       - Sets the number of max connections
+                                to <value>.  (This number cannot exceed
+                                HARD_FDLIMIT in config.h)
+
+                    -- The following three are if compiled with FLUD --
+                     FLUDNUM   - Sets the number of flud messages to
+                                 trip flud alarm to <value>
+                     FLUDTIME  - Sets the number of seconds in which
+                                  FLUDNUM msgs must occur to <value>
+                     FLUDBLOCK - Sets the number of seconds to block
+                                 fluds to <value>
+
+                    -- The following is if compiled with NO_CHANOPS_ON_SPLIT
+                       or NO_JOIN_ON_SPLIT or PRESERVE_CHANNEL_ON_SPLIT
+                     SPLITDELAY - Sets how long after the connect burst
+                                  starts before ops can be hacked on new
+                                  channels. 5(minutes) is usually plenty.
+                                  Disable using 0.
+
+                     SMALLNET   - Below this number of servers present
+                                  means special split handling is now on.
+
+                     -- The following is if compiled with ANTI_SPAMBOT
+                     SPAMNUM    - Sets how many join/parts to channels
+                                  constitutes a possible spambot.
+                     SPAMTIME   - Below this time on a channel
+                                  counts as a join/part as above.
+*stats
+  STATS <letter> [server|nick]
+
+  Queries server [server] (or your own server if no
+  server parameter is given) for info corresponing to
+  <letter>.
+  ------
+  c - Shows C/N lines
+  b - Shows B lines (Obsolete)
+  d - Shows users per domain 
+  D - Shows D lines
+  e - Shows E lines (Obsolete)
+  f - Shows channel statistics
+  G - Shows G lines
+  g - Shows services based X Lines (SXLINES)
+  h - Shows H/L lines
+  i - Shows virtual links
+  I - Shows I lines
+  K - Shows K lines (or matched klines)
+  k - Shows temporary K lines (or matched temp klines)
+  L - Shows IP and generic info about [nick]
+  l - Shows hostname and generic info about [nick]
+  m - Shows commands and their usage
+  o - Shows O/o lines
+  P - Shows configured ports
+  p - Shows opers connected and their idle times
+  q - Shows services based Q Lines
+  Q - Shows q-lined nicks
+  r - Shows resource usage by ircd (only in DEBUGMODE)
+  s - Shows String Cache System stats
+  S - Shows server names cache
+  t - Shows generic server stats
+  u - Shows server uptime
+  U - Shows U lines
+  v - Shows SVlines
+  V - Shows connected servers and their idle times  
+  x - Shows X lines
+  X - Shows missing servers
+  y - Shows Y lines
+  z - Shows memory stats
+  Z - Shows Z lines
+  ? - Shows connected servers and sendq info about them
+
+*rehash
+  + REHASH      - REHASH [option]
+                  When no [option] is given, ircd will re-read the
+                  ircd.conf file.
+
+                  [option] can be one of the following:
+                    DNS     - Re-read the /etc/resolv.conf file
+                    TKLINES - Clears temporary klines
+                    MOTD    - Re-reads MOTD file
+                    OMOTD   - Re-reads Oper MOTD file
+                    HELPSYS - Re-reads this HELP file
+                    DLINES  - Re-hashes D-lines
+                    DCONF   - Rehash dynamic configuration
+                    DUMP    - Creates a dump of some of the ircd.conf
+                              options
+*hvc
+HVC stands for human verification code.
+  Enabling HVC will force all users to type a /login number command
+  using the number that is presented with ascii art.
+  This will allow you to avoid connections from automated clients, like
+  clonebots or trojans, please note that this will also deny "normal" bots
+  and scripts from connecting and auto-identifying.
+
+You can enable or disable HVC with /HVC ON | OFF .
+*EOF*

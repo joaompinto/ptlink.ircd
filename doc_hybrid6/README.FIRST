@@ -1,0 +1,41 @@
+ircd-hybrid-6 README
+--------------------
+$Id: README.FIRST,v 1.3 2005/08/27 16:23:49 jpinto Exp $
+
+If you don't read this first, we won't help you.
+:-)
+
+See the INSTALL document for info on configuring and compiling
+ircd-hybrid.
+
+IMPORTANT. I/K line handling has changed significantly.  There are also
+many new types of conf lines.  Please see RELNOTES and doc/example.conf
+for more information.  The default port is no longer specified in the M
+line, you must add a specific P line for it.
+
+TRANSLATION: You *MUST* fix your conf before upgrading from hybrid-5.
+
+LOTS OF THINGS HAVE CHANGED IN CONFIG.H.  PLEASE READ THROUGH IT.
+
+There is now a mailing list for general discussion of Hybrid.  To subscribe
+to the Hybrid List, send email to listmanager@the-project.org with
+a single line in the body containing "subscribe hybrid".
+
+SOLARIS USERS: this code appears to tickle a bug in older gcc and
+egcs ONLY on 64-bit Solaris7.  gcc-2.95 and SunPro C on 64bit should
+work fine, and any gcc or SunPro compiler on 32bit.
+
+SUPPORT PLATFORMS: this code should compile without any warnings
+on FreeBSD 3.x/4.x, RedHat 6.2, and Solaris 7/sparc.  Please let us know
+if you find otherwise.  It probably does not compile on AIX, IRIX,
+or libc5 Linux.
+
+CYGWIN USERS: This code is known to compile and run somewhat under
+Cygwin 1.1.2.  You will need BIND-4.9.7 and libcrypt to compile hybrid
+under Cygwin.  I have ported BIND 4.9.7 to Cygwin and written a standalone
+md5-based libcrypt that I will make available separately.  With a current
+Cygwin distribution, the libcrypt is not needed, as Cygwin provides a DES
+based libcrypt that works without issues in Hybrid.
+
+Obtain the valid BIND-4.9.7 distribution here:
+ftp://ftp.blackened.com/pub/irc/hybrid/cygwin/pkg/

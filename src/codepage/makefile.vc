@@ -1,0 +1,28 @@
+# src/codepage/makefile.vc -- codepage conversion program and process;
+# Copyright (C) 2001-2002 ForestNet IRC Network
+# $Id: makefile.vc,v 1.3 2005/08/27 16:23:50 jpinto Exp $
+
+CC=cl.exe
+LINK=link.exe
+OBJS=mkenc.obj mkenc.res
+ENCS=-n cp1250.enc cp1251.enc cp1253.enc cp866.enc iso8859-5.enc \
+	koi8r.enc koi8u.enc mac.enc -t translit.enc
+
+debug: $(OBJS:.obj=.dobj)
+	$(LINK) -nologo -debug $(OBJS:.obj=.dobj)
+
+release:$(OBJS)
+	$(LINK) -nologo -release -opt:ref $(OBJS)
+	-upx --best --compress-exports=0 -qqq mkenc.exe 2>nul
+	mkenc $(ENCS)
+	echo name:koi8>>koi8r
+	echo name:us_ascii>>translit
+
+clean:
+	-del *.obj *.dobj *.exe *.ilk *.pdb *.idb *.opt *.res cp1250 cp1251 \
+		cp1253 cp866 iso8859-5 koi8r koi8u mac translit 2>nul
+
+.c.obj:
+	$(CC) $(CFLAGS) -c $<
+.c.dobj:
+	$(CC) $(CFLAGS) -Fo$(<:.c=.dobj) $<

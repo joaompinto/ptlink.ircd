@@ -1,0 +1,87 @@
+$Id: Hybrid-team,v 1.3 2005/08/27 16:23:49 jpinto Exp $
+
+  The hybrid team is a group of ircd coders who were frustrated
+with the instability and all-out "dirtiness" of the EFnet ircd's
+available. "hybrid" is the name for the collective efforts of a group
+of people, all of us.
+ 
+Anyone is welcome to contribute to this effort. We are serious about this.
+ 
+  We have run the code through "purify", a commercial program designed
+to find memory leaks. It continues to be checked with malloc tools today.
+The code has been prototyped. Profiling has also been done to catch
+slow portions of the code. "crufty" code has been re-written, obsolete
+code has been ripped out. We have also looked at making the code as easy
+to setup up and run as possible using configure, et cetera.
+Finally speed enhancements and other enhancements have been made to this
+ircd, and continue to be made to this ircd.
+ 
+  That is not to say that there are still not bugs; there are always bugs.
+But we review each other's work on this project, and are open to publicly
+submittable bug reports.
+ 
+The core team as, of this major release:
+ 
+cosine        Patrick Alken      <wnder@uwns.underworld.net>
+Dianora       Diane Bruce        <db@db.net>
+larne         Edward Brocklesby  <ejb@leguin.org.uk>
+Neph|l|m      Adel Mezibra       <adel@cybercable.fr>
+pro           Bill Jonus         <proggy@earthling.net>
+Rodder        Jon Lusky          <lusky@blown.net>
+toot          Toby Verrall       <to7@antipope.fsnet.co.uk>
+Wohali        Joan Touzet        <joant@ieee.org>
+xyst          Greg Prosser       <gnp@arrogant.org>
+ 
+The following people have contributed blood, sweat, and/or code to
+this release of hybrid, in nick alphabetical order:
+ 
+ArielIL       Ariel Biener       <ariel@fireball.tau.ac.il>
+A1kmm         Andrew Miller      <a1kmm@mware.virtualave.net>
+Bleep         Thomas Helvey      <tomh@inxpress.net>
+CBongo        Chris Bongaarts    <cab@tc.umn.edu>
+comstud       Chris Behrens      <cbehrens@concentric.net>
+David-T       David Taylor       <davidt@yadt.co.uk>
+echo          Adam J. Durana     <adam@caca.com>
+fl_           Lee Hardy          <leeh@shagged.org>
+FlashMan      Craig A. Huegen    <chuegen@quadrunner.com>
+Hwy101        Walter Campbell    <wcampbel@botbay.net>
+jailbird      Dustin Marquess    <jailbird@alcatraz.fdf.net>
+johan         Johannes Erdfelt   <jerdfelt@eng.mindspring.net>
+koitsu/k9     Jeremy Chadwick    <jdc@best.net>
+kre           Dinko Korunic      <kreator@fly.srk.fer.hr>
+LarZ          Matthew Ramsey     <mjr@blackened.com>
+orabidoo      Roger Espel LLima  <espel@unix.bigots.org>
+Riedel        Dennis Vink        <vink@vuurwerk.nl>
+Seaner        Sean McVeigh       <sdlmcvei@uwaterloo.ca>
+Shadowfax     Michael Pearce     <mpearce@varner.com>
+Slowaris      Ryan Parker        <rjp@wpmedia.com>
+Taner         Taner Halicioglu   <taner@cerf.net>
+ThemBones     Brian Kraemer      <kraemer@u.washington.edu>
+White_Dragon  Chip Norkus        <wd@dal.net>
+WintrHawk     Jake Khuon         <khuon@GCtr.Net>
+              Piotr Kucharski    <chopin@sgh.waw.pl>
+ 
+Developers and Contributors for previous versions:
+ 
+Chris Portman       Keith Fralick       Jon Mischo
+Sam Noble           Paul Graham         Darren Reed
+Markku Savela       Greg Lindahl        Jarkko Oikarinen
+Armin Gruner        Matthew Green       Chuck Kane
+Matt Lyle           Vesa Ruokonen       Nicolas Pioch
+Stellan Klebom      Dan Goodwin         Mike Bolotski
+Ian Frechette       Markku Jarvinen     Kimmo Suominen
+Jeff Trim           Vijay Subramaniam   Karl Kleinpaste
+Bill Wisner         Tom Davis           Hugo Calendar
+Bo Adler            Michael Sandrof     Jon Solomon
+Jan Peterson        Helen Rose          Tom Hopkins
+Stephen van den Berg
+ 
+Others are welcome. Always.
+ 
+Thanks also goes to those persons not mentioned here who have added
+their advice, opinions, and code to IRC.
+Thanks also to those who provide the kind sysadmins who let me and
+others continue to develop IRC.
+ 
+Email fixes/complaints/rotten tomatoes to ircd-hybrid@the-project.org.
+

@@ -1,0 +1,10 @@
+# sample resolv.conf to be used on windows with cygwin
+# if you don't know your dns configuration you can check it with:
+#   ipconfig /all
+
+# place the local domain on the following line
+search localdomain
+# place your first dns server on the following line
+nameserver 127.0.0.1
+# place your second dns server on the following line
+nameserver 127.0.0.1

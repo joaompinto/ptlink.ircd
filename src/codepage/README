@@ -1,0 +1,17 @@
+The sources for codepage conversion can be downloaded from
+http://www.unicode.org/Public/MAPPINGS/ - they are ready to
+be processed with `mkenc'.  The only exception is made for
+`translit.enc', which has no source and is updated manually.
+
+Codepage aliases have to be added manually after source file
+is processed, that can be done with a command like:
+	echo name:koi8 >> koi8u
+	echo name:us_ascii >> translit
+Currently, a codepage can only have one alias, the rest is
+ignored.  If a number of codepages have the same alias, the
+first one is selected.
+
+Any additions to translit.enc are more than welcome at
+ircd@forestnet.org, thanks in advance.
+
+-- $Id: README,v 1.3 2005/08/27 16:23:50 jpinto Exp $

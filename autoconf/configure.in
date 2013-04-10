@@ -1,0 +1,471 @@
+dnl $Id: configure.in,v 1.4 2005/10/16 15:01:33 jpinto Exp $
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(include/class.h)
+AC_PREFIX_DEFAULT($HOME/ircd)
+AC_CONFIG_AUX_DIR(autoconf)
+AC_CONFIG_HEADER(include/setup.h)
+
+SB=`./shtool echo -n -e %B`
+EB=`./shtool echo -n -e %b`
+                                                                                
+AC_DEFUN(BOLD_MESSAGE,[
+              AC_MSG_RESULT()
+              AC_MSG_RESULT(${SB}$1${EB})
+              AC_MSG_RESULT()
+	      ])
+
+PACKAGE=hybrid-ptlink
+VERSION=`grep '#define.PATCHLEVEL' include/patchlevel.h|awk '{print $3}'|tr -d \"`
+BOLD_MESSAGE(Configuring ${VERSION} ...)
+AC_SUBST(PACKAGE)
+AC_SUBST(VERSION)
+
+dnl Checks for programs.
+AC_PROG_CC
+AC_ISC_POSIX
+AC_CANONICAL_SYSTEM
+AC_PROG_MAKE_SET
+AC_PATH_PROG(RM,rm)
+AC_PATH_PROG(CP,cp)
+AC_PATH_PROG(AR,ar)
+AC_PROG_INSTALL
+
+dnl Checks for libraries.
+dnl Replace `main' with a function in -lnsl:
+dnl Replace ain' with a function in -lnsl:
+AC_CHECK_LIB(nsl, gethostbyname)
+AC_CHECK_FUNC(res_mkquery,, [
+  AC_CHECK_LIB(resolv, res_mkquery, LIBS="-lresolv")
+])
+AC_CHECK_LIB(socket, socket)
+AC_CHECK_FUNC(crypt,, AC_CHECK_LIB(descrypt, crypt,,AC_CHECK_LIB(crypt, crypt,,)))
+AC_CHECK_FUNC(inet_ntoa,, AC_CHECK_LIB(nsl, inet_ntoa,,))
+AC_CHECK_FUNC(inet_aton,, AC_CHECK_LIB(resolv, inet_aton,,))
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS(sys/param.h sys/select.h errno.h string.h stddef.h getopt.h crypt.h)
+
+dnl Check for stdarg.h - if we can't find it, halt configure
+AC_CHECK_HEADER(stdarg.h, , AC_MSG_ERROR(** stdarg.h could not be found - ircd-hybrid will not compile without it **))
+
+dnl Checks for library functions.
+AC_PROG_GCC_TRADITIONAL
+
+dnl Check for zlib support (-lz) by looking for deflate().  Then check
+dnl for zlib 1.0.2 or higher by looking for zlibVersion().
+AC_CHECK_LIB(z, deflate)
+AC_CHECK_FUNC(zlibVersion,, AC_MSG_WARN(zlib 1.0.2 or higher required for ZIPLINK support))
+
+dnl check for poll() call
+AC_CHECK_FUNC(poll, AC_DEFINE(USE_POLL,,[Use poll()]),,)
+
+dnl check for setenv() call
+AC_CHECK_FUNC(setenv, AC_DEFINE(USE_SETENV,,[Use setenv()]),)
+
+dnl check for chroot() call
+AC_CHECK_FUNC(poll, AC_DEFINE(HAVE_CHROOT,,[Have chroot]),)
+
+dnl taken from ircd's Config script
+AC_MSG_CHECKING(for non-blocking socket implementation)
+AC_TRY_RUN(
+[
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <sys/file.h>
+#include <signal.h>
+#include <stdlib.h>
+alarmed()
+{
+	exit(1);
+}
+int main()
+{
+#if defined(O_NONBLOCK)
+	char b[12], x[32];
+	int f, l = sizeof(x);
+	f = socket(AF_INET, SOCK_DGRAM, 0);
+	if (f >= 0 && !(fcntl(f, F_SETFL, O_NONBLOCK))) {
+		signal(SIGALRM, alarmed);
+		alarm(3);
+		recvfrom(f, b, 12, 0, (struct sockaddr *)x, &l);
+		alarm(0);
+		exit(0);
+	}
+#endif
+	exit(1);
+}
+], AC_DEFINE(NBLOCK_POSIX,,[Posix]) AC_MSG_RESULT( O_NONBLOCK ),, AC_MSG_RESULT( cross compiling ))
+
+dnl try mmap() support
+AC_FUNC_MMAP
+
+AC_TRY_RUN(
+[
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <sys/file.h>
+#include <signal.h>
+#include <stdlib.h>
+alarmed()
+{
+	exit(1);
+}
+int main()
+{
+#if defined( O_NDELAY ) && !defined( NBLOCK_POSIX )
+	char b[12], x[32];
+	int f, l = sizeof(x);
+	f = socket(AF_INET, SOCK_DGRAM, 0);
+	if (f >= 0 && !(fcntl(f, F_SETFL, O_NDELAY))) {
+		signal(SIGALRM, alarmed);
+		alarm(3);
+		recvfrom(f, b, 12, 0, (struct sockaddr *)x, &l);
+		alarm(0);
+		exit(0);
+	}
+#endif
+	exit(1);
+}
+], AC_DEFINE(NBLOCK_BSD,,[BSD]) AC_MSG_RESULT( O_NDELAY ),, AC_MSG_RESULT(unable to test))
+
+AC_TRY_RUN(
+[
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <sys/file.h>
+#include <signal.h>
+#include <stdlib.h> 
+alarmed()
+{
+	exit(1);
+}
+int main()
+{
+#if !defined(NBLOCK_BSD) && !defined(NBLOCK_POSIX) && defined(FIONBIO)
+	char b[12], x[32];
+	int f, l = sizeof(x);
+	f = socket(AF_INET, SOCK_DGRAM, 0);
+	if (f >= 0 && !(fcntl(f, F_SETFL, FIONBIO))) {
+		signal(SIGALRM, alarmed);
+		alarm(3);
+		recvfrom(f, b, 12, 0, (struct sockaddr *)x, &l);
+		alarm(0);
+		exit(0);
+	}
+#endif /* !NBLOCK_POSIX && !NBLOCK_BSD && FIONBIO */
+	exit(1);
+}
+], AC_DEFINE(NBLOCK_SYSV,,[SysV]) AC_MSG_RESULT(FIONBIO),, AC_MSG_RESULT(unable to test))
+
+dnl taken from ircd's Config script
+AC_MSG_CHECKING(signal implementation)
+AC_TRY_RUN(
+[
+#include <stdlib.h>
+int main()
+{
+#if defined(HAVE_SIGACTION)
+	exit(0);
+#else
+	exit(1);
+#endif
+}
+], AC_DEFINE(POSIX_SIGNALS,,[POSIX signals]) AC_MSG_RESULT(posix),
+    AC_TRY_RUN(
+[
+#include <signal.h>
+#include <stdlib.h>
+int calls = 0;
+void handler()
+{
+	if (calls) return;
+ 	calls++;
+	kill(getpid(), SIGTERM);
+	sleep(1);
+}
+int main()
+{
+	signal(SIGTERM, handler);
+	kill(getpid(), SIGTERM);
+	exit (0);
+}
+], AC_DEFINE(BSD_RELIABLE_SIGNALS,,[BSD Signals]) AC_MSG_RESULT(bsd),
+    AC_DEFINE(SYSV_UNRELIABLE_SIGNALS,,[SYSV_UNRELIABLE_SIGNALS]) AC_MSG_RESULT(sysv), AC_MSG_RESULT(uknown)),
+AC_MSG_RESULT(unknown))
+
+
+AC_ARG_ENABLE(owncrypt, [  --enable-owncrypt	  Use our own crypt() routines [default=no]],[
+	own_crypt=$enableval
+],[
+   	own_crypt=no
+])
+
+AC_MSG_CHECKING([whether to use our own crypt routines])
+if test x"$own_crypt" = xyes ; then
+	AC_MSG_RESULT([yes])
+	AC_DEFINE(OWN_CRYPT,1,[own crypt])
+else
+    	AC_MSG_RESULT([no])
+fi
+
+AC_ARG_ENABLE(hebrew, [  --enable-hebrew	  Allow hebrew chars on nicknames [default=no]],[
+	hebrew_support=$enableval
+],[
+   	hebrew_support=no
+])
+
+AC_MSG_CHECKING([whether to support hebrew chars on nicknames])
+if test x"$hebrew_support" = xyes ; then
+	AC_MSG_RESULT([yes])
+	AC_DEFINE(HEBREW_SUPPORT,,[Hebrew Support])
+	options="${options}Hebrew "
+else
+    	AC_MSG_RESULT([no])
+fi
+AC_ARG_ENABLE(korean, [  --enable-korean	  Allow korean chars on nicknames [default=no]],[
+	korean_support=$enableval
+],[
+   	korean_support=no
+])
+
+AC_MSG_CHECKING([whether to support korean chars on nicknames])
+if test x"$korean_support" = xyes ; then
+	AC_MSG_RESULT([yes])
+	AC_DEFINE(KOREAN,1,[Korean support])
+	options="${options}Korean "
+else
+    	AC_MSG_RESULT([no])
+fi
+
+AC_ARG_ENABLE(utf-8, [  --enable-utf-8	  Allows utf-8 nicks/chans [default=no]],[
+        utf_support=$enableval
+],[
+        utf_support=no
+])
+
+AC_MSG_CHECKING([whether to support utf-8 chars on nicknames])
+if test x"$utf_support" = xyes ; then
+	AC_MSG_RESULT([yes])
+	AC_DEFINE(UTF8,1,[utf-8 support])
+	options="${options}utf-8 "
+else
+    	AC_MSG_RESULT([no])
+fi
+
+AC_ARG_ENABLE(flooddelay, [  --enable-flooddelay  	  Applies delay on excessive messages[default=yes]],[
+        flooddelay=$enableval
+],[
+        flooddelay=yes
+])
+
+AC_MSG_CHECKING([whether to enable flooddelay])
+if test x"$flooddelay" = xyes ; then
+	AC_MSG_RESULT([yes])
+	AC_DEFINE(FLOOD_DELAY,1,[flooddelay support])
+else
+	options="${options}NoDelay "
+    	AC_MSG_RESULT([no])
+fi
+
+dnl **
+dnl ** Experimental IPv6 support
+dnl **
+AC_ARG_ENABLE(ipv6,
+[  --enable-ipv6           Enable IPv6 support (experimental)],
+        if test x$enableval = xyes; then
+                want_ipv6=yes
+        else
+                if test "x$enableval" = xno; then
+                        want_ipv6=no
+                else
+                        want_ipv6=yes
+                fi
+        fi,
+        want_ipv6=no)
+
+
+AC_ARG_ENABLE(halfops, [  --enable-halfops	  Support halfops chanmode [default=no]],[
+        halfops_support=$enableval
+],[
+        halfops_support=no
+])
+
+dnl check for halfops
+AC_MSG_CHECKING([whether to support halfops chanmode])
+if test x"$halfops_support" = xyes ; then
+	AC_MSG_RESULT([yes])
+	AC_DEFINE(HALFOPS,1,[halfops support])
+dnl	options="${options}halfops "
+else
+    	AC_MSG_RESULT([no])
+fi
+
+AC_ARG_WITH(ssl,
+[  --with-ssl=[gnutls|openssl] Build with GNUTLS or OpenSSL],
+	if test x$withval = xno; then
+		want_gnutls=no
+		want_openssl=no
+	elif test x$withval = xgnutls; then
+		want_gnutls=yes
+		want_openssl=no
+	elif test x$withval = xopenssl; then
+		want_gnutls=no
+		want_openssl=yes
+	else
+		want_gnutls=yes
+		want_openssl=yes
+	fi, [
+		want_gnutls=no
+		want_openssl=no
+	])
+
+dnl **
+dnl ** CHROOT support
+dnl **
+
+AC_ARG_WITH(chrootdir,
+[  --with-chrootdir=DIR       Specify the chroot directory )],
+	[
+	AC_DEFINE_UNQUOTED(CHROOT_DIR,"$withval",[chroot dir])
+        chroot_dir="$withval" ]
+	,)
+
+AC_ARG_WITH(pidfile,
+[  --with-pidfile=filename       Specify the pathname of the pid file )],
+	[
+	AC_DEFINE_UNQUOTED(PIDFILE,"$withval",[Pidfile])
+        pid_file="$withval" ]
+	,)
+
+AC_ARG_WITH(uid,
+[  --with-uid=uid       Specify the uid the ircd should run with )],
+	AC_DEFINE_UNQUOTED(IRC_UID,$withval,[ircd uid]) ,)
+
+AC_ARG_WITH(gid,
+[  --with-uid=gid       Specify the gid the ircd should run with )],
+	AC_DEFINE_UNQUOTED(IRC_GID,$withval,[ircd gid]) ,)
+
+dnl **
+dnl ** SSL support
+dnl **
+
+have_ssl=no
+
+if test $want_gnutls = yes; then
+	AC_CHECK_LIB(gnutls, gnutls_global_init, [
+		AC_CHECK_HEADERS(gnutls/gnutls.h, [
+			AC_DEFINE(HAVE_GNUTLS,, Build with GNUTLS support)
+			SSL_LIBS="-lgnutls -lgnutls-openssl -lgcrypt"
+			AC_SUBST(SSL_LIBS)
+			have_ssl="yes (GNUTLS)"
+			have_gnutls=yes
+		])
+	],, -lgcrypt)
+fi
+
+if test "$want_openssl" = "yes" && test "$have_ssl" = "no"; then
+    AC_CHECK_LIB(ssl, SSL_read, [
+      AC_CHECK_HEADERS(openssl/ssl.h openssl/err.h, [
+        SSL_LIBS="-lssl -lcrypto"
+        AC_SUBST(SSL_LIBS)
+	have_openssl=yes
+      ])
+    ],, -lcrypto)
+  fi
+  if test "$have_openssl" = "yes"; then
+    AC_DEFINE(HAVE_OPENSSL,, Build with OpenSSL support)
+    have_ssl="yes (OpenSSL)"
+    AC_PATH_PROG(OPENSSLPATH,openssl)
+fi
+
+if test "$have_ssl" != "no"; then
+	AC_DEFINE(HAVE_SSL,, Build with SSL/TLS support)
+	options="${options}SSL "
+fi
+
+use_adns=yes                                                                                               
+
+AC_ARG_ENABLE(adns, [  --disable-adns	  Disable adns for reverse lookup [default=no]],[
+	use_adns=no
+],[
+   	use_adns=yes
+])
+
+if test "x$want_ssl" = "xyes"; then
+	AC_PATH_PROG(OPENSSLPATH,openssl)
+fi
+
+if test "x$want_ipv6" = "xyes"; then
+        AC_MSG_CHECKING([for IPv6])
+        AC_CACHE_VAL(ircd_cv_type_in6_addr,
+        [AC_TRY_COMPILE([
+        #include <sys/types.h>
+        #include <sys/socket.h>
+        #include <netinet/in.h>
+        #include <netdb.h>
+        #include <arpa/inet.h>],
+        [struct in6_addr i;],
+        ircd_cv_type_in6_addr=yes,
+        ircd_cv_type_in6_addr=no,
+        )])
+        if test $ircd_cv_type_in6_addr = yes; then
+                AC_DEFINE(IPV6,,[IPv6 support])
+                options="${options}IPv6 "
+		use_adns=no 
+	else
+		use_adns=yes
+        fi
+        AC_MSG_RESULT($ircd_cv_type_in6_addr)
+fi
+
+AC_MSG_CHECKING([whether to use adns])
+if test x"$use_adns" = xyes ; then
+	AC_MSG_RESULT([yes])
+	AC_DEFINE(USE_ADNS,,[Use adns])
+	ADNS="adns"
+	ADNSLIB="../adns/libadns.a"
+else
+  	AC_MSG_RESULT([no])	
+	ADNS=""
+	ADNSLIB=""
+	options="${options}NoADNS "
+fi
+
+AC_SUBST(ADNS)
+AC_SUBST(ADNSLIB)
+
+AC_SUBST(LIBS)
+
+AC_OUTPUT(Makefile src/Makefile adns/Makefile tools/Makefile)
+
+bpath=`eval echo ${bindir}`
+bpath=`eval echo ${bpath}`
+cpath=`eval echo ${sysconfdir}`
+lpath=`eval echo ${localstatedir}`
+
+echo "
+Configuration:
+
+  IRCd version:............. ${VERSION}
+  Compiler:................. ${CC}
+  Binary path:.............. ${bpath}
+  Config path:.............. ${cpath}
+  Var path:................. ${lpath}"
+if test x"$chroot_dir" != "x" ; then
+  echo "\
+  ChRoot path............... ${chroot_dir}"
+fi
+if test x"$options" != "x" ; then
+  echo "\
+  Options:.................. ${options}"
+fi
+echo ""
+echo ""
+

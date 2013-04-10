@@ -1,0 +1,61 @@
+#!/bin/sh
+tmpfile=tmp.$$
+# We need to check if we got everything that we need
+echo "Checking for \"dialog\"..."
+    DIALOG=`which dialog 2> /dev/null`
+    if [ -z $DIALOG ]; then
+	echo "Sorry, \"dialog\" utility was not found and is required for this tool"
+	exit
+    else
+	echo "WHOEPIEE, we found \"dialog\"  :)"
+    fi
+echo "Checking for \"mkpasswd\"..."
+  if [ ! -x "./mkpasswd" ]; then
+    echo "Sorry, didn't found mkpasswd on current directory"
+    exit
+  fi
+
+dialog --inputbox "Oper Nick" 8 50 2>$tmpfile
+o_nick=`cat $tmpfile`
+#dialog --inputbox "Allowed to get oper from (mask):" 8 50 "*" 2>$tmpfile
+#o_mask=`cat $tmpfile`
+o_mask="*"
+dialog --passwordbox "Oper Password" 8 50 2>$tmpfile
+o_pass=`cat $tmpfile`
+o_pass=`./mkpasswd -p $o_pass`
+dialog --checklist "Oper flags" 20 60 10 \
+	O "Global Operator" Y \
+	o "Local Operator" Y \
+	D "Allow to use /die and /restart" Y \
+	R "Allow remote squit/connects" Y \
+	H "Allow rehash" Y \
+	2> $tmpfile
+o_flags=`cat $tmpfile | tr -d "\" "`
+dialog --checklist "Information modes" 20 60 10 \
+	b "bots detection" Y \
+	c "client connections/exits" Y \
+	k "kills" Y \
+	r "client rejections" Y \
+	g "generic" Y \
+	v "svlines" Y \
+	y "info/stats requests" Y \
+	d "debug" Y \
+	e "external connects/squits" Y \
+	f "server is full" Y \
+	2> $tmpfile
+o_imodes=`cat $tmpfile | tr -d "\" "`
+dialog --checklist "User modes modes" 20 60 10 \
+	i "invisible mode (will not be seen on /names from outsiders)" Y \
+	p "private user (hide channels from whois)" Y \
+	w "receive wallops (not used on this ircd)" Y \
+	H "hide oper status on whois from normal users" Y \
+	T "technical admin" Y \
+	N "network admin" Y \
+	y "will receive a server notice when someone /whois you" Y \
+	2> $tmpfile
+o_umodes=`cat $tmpfile | tr -d "\" "`
+rm $tmpfile
+clear
+echo "Add the following oline to your ircd.conf:"
+echo "O:$o_mask:$o_pass:$o_nick:$o_flags:3:$o_umodes:$o_imodes"
+echo ""

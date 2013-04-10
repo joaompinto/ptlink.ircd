@@ -1,0 +1,32 @@
+Test length: 0
+
+
+
+Test length: 1
+a
+a
+a
+Test length: 2
+ab
+ab
+ab
+Test empty string length: 0
+
+
+
+Test empty string length: 1
+
+
+
+Test empty string length: 2
+
+
+
+Test length: data_length: 36
+abcdefghijklmnopqrstuvwxyz0123456789***
+abcdefghijklmnopqrstuvwxyz0123456789***
+abcdefghijklmnopqrstuvwxyz0123456789***
+Test length: data_length + 1: 37
+abcdefghijklmnopqrstuvwxyz0123456789
+abcdefghijklmnopqrstuvwxyz0123456789
+abcdefghijklmnopqrstuvwxyz0123456789

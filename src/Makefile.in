@@ -1,0 +1,278 @@
+#
+# Makefile.in for ircd/src
+#
+# $Id: Makefile.in,v 1.5 2005/08/27 16:23:49 jpinto Exp $
+#
+CC = @CC@
+RM = @RM@
+MKDEP = ${CC} -MM
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+sysconfdir = @sysconfdir@
+localstatedir = @localstatedir@
+
+IRCDLIBS = @LIBS@ @ADNSLIB@ @SSL_LIBS@
+
+INCLUDES = -I../include
+CPPFLAGS = ${INCLUDES} @CPPFLAGS@
+ 
+#
+# For developers
+# CFLAGS= -g -O2 -Wall 
+#
+
+SRCS = \
+	adns.c \
+	channel.c \
+	class.c \
+	client.c \
+	crypt.c \
+	dbuf.c \
+	dconf.c \
+	dline_conf.c \
+	fdlist.c \
+	fileio.c \
+	flud.c \
+	hash.c \
+	help.c \
+	hvc.c \
+	irc_string.c \
+	ircd.c \
+	ircd_signal.c \
+	list.c \
+	listener.c \
+	m_admin.c \
+	m_away.c \
+	m_bots.c \
+	m_capab.c \
+	m_close.c \
+	m_codepage.c \
+	m_connect.c \
+	m_dccdenys.c \
+	m_die.c \
+	m_error.c \
+	m_floodex.c \
+	m_gline.c \
+	m_helpers.c \
+	m_htm.c \
+	m_ircops.c \
+	m_imode.c \
+	m_info.c \
+	m_ison.c \
+	m_kill.c \
+	m_kline.c \
+	m_links.c \
+	m_list.c \
+	m_locops.c \
+	m_lost.c \
+	m_ltrace.c \
+	m_lusers.c \
+	m_map.c \
+	m_message.c \
+	m_mode.c \
+	m_oper.c \
+	m_pass.c \
+	m_ping.c \
+	m_pong.c \
+	m_quit.c \
+	m_rehash.c \
+	m_restart.c \
+	m_server.c \
+	m_set.c \
+	m_setname.c \
+	m_silence.c \
+	m_squit.c \
+	m_stats.c \
+	m_svinfo.c \
+	m_svsadmin.c \
+	m_svsguest.c \
+	m_svsinfo.c \
+	m_svsmode.c \
+	m_time.c \
+	m_trace.c \
+	m_ungline.c \
+	m_unkline.c \
+	m_userhost.c \
+	m_users.c \
+	m_version.c \
+	m_wallops.c \
+	m_watch.c \
+	m_who.c \
+	m_whois.c \
+	m_zombies.c \
+	match.c \
+	md5.c \
+	motd.c \
+	mtrie_conf.c \
+	oratime.c \
+	numeric.c \
+	packet.c \
+	parse.c \
+        res.c \
+	restart.c \
+	s_auth.c \
+	s_bsd.c \
+	s_conf.c \
+	s_debug.c \
+	s_log.c \
+	s_misc.c \
+	s_serv.c \
+	s_services.c \
+	s_stats.c \
+	s_user.c \
+	s_zip.c \
+	scache.c \
+	send.c \
+	spoof.c \
+	sprintf_irc.c \
+	sqline.c \
+	ssl.c \
+	svline.c \
+	sxline.c \
+	throttle.c \
+	unicode.c \
+        vlinks.c \
+	whowas.c \
+	zline.c
+
+#
+# Do it this way for Ultrix, and its portable at least
+# just make sure OBJ's match SRC's (pointed out by Ian)
+# Ultrix can't use gnu make????? feh --Bleep
+# 
+#OBJS = \
+#	channel.o \
+#	class.o \
+#	client.o \
+#	crypt.o \
+#	dbuf.o \
+#	dconf.o \
+#	dline_conf.o \
+#	fdlist.o \
+#	fileio.o \
+#	hash.o \
+#	help.o \
+#	irc_string.o \
+#	ircd.o \
+#	ircd_signal.o \
+#	list.o \
+#	listener.o \
+#	m_admin.o \
+#	m_away.o \
+#	m_capab.o \
+#	m_close.o \
+#	m_connect.o \
+#	m_die.o \
+#	m_error.o \
+#	m_gline.o \
+#	m_htm.o \
+#	m_ircops.o \
+#	m_info.o \
+#	m_kline.o \
+#	m_links.o \
+#	m_list.o \
+#	m_locops.o \
+#	m_ltrace.o \
+#	m_lusers.o \
+#	m_map.o \
+#	m_message.o \
+#	m_mode.o \
+#	m_pass.o \
+#	m_ping.o \
+#	m_pong.o \
+#	m_quit.o \
+#	m_rehash.o \
+#	m_restart.o \
+#	m_server.o \
+#	m_silence.o \
+#	m_set.o \
+#	m_setname.o \
+#	m_squit.o \
+#	m_stats.c \
+#	m_svinfo.o \
+#	m_svsinfo.o \
+#	m_svsmode.o \
+#	m_time.o \
+#	m_trace.o \
+#	m_ungline.o \
+#	m_unkline.o \
+#	m_users.o \
+#	m_version.o \
+#	m_wallops.o \
+#	m_watch.o \
+#	m_who.o \
+#	m_whois.o \
+#	match.o \
+#	motd.o \
+#	mtrie_conf.o \
+#	oratime.o \
+#	numeric.o \
+#	packet.o \
+#	parse.o \
+#	s_auth.o \
+#	s_bsd.o \
+#	s_conf.o \
+#	s_debug.o \
+#	s_log.o \
+#	s_misc.o \
+#	s_numeric.o \
+#	s_serv.o \
+#	s_services.o \
+#	s_stats.o \
+#	s_user.o \
+#	s_zip.o \
+#	scache.o \
+#	send.o \
+#	spoof.c \
+#	sprintf_irc.o \
+#	svline.o \
+#	support.o \
+#	sxline.o \
+#	throttle.o \
+#	whowas.o \
+#	zline.o
+
+OBJS = ${SRCS:.c=.o}
+
+all: ircd mkenc
+
+build: all
+
+ircd: ${OBJS} version.o
+	${CC} ${LDFLAGS} -o $@ ${OBJS} version.o ${IRCDLIBS}
+	mv version.c version.c.last
+mkenc:  codepage/mkenc.c
+	${CC} ${LDFLAGS} -o $@ codepage/mkenc.c
+
+install: build
+	@echo "Please do a make install from the top level directory"
+
+version.c: version.c.SH
+	/bin/sh ./version.c.SH
+
+help2html: help.c        
+	${CC} ${CPPFLAGS} ${CFLAGS} -DHTML -o $@ help.c 
+.c.o:
+	${CC} ${CPPFLAGS} ${CFLAGS} -c $<
+
+../include/path.h:
+	@echo "#define BINPATH \"${bindir}\"" > ../include/path.h
+	@echo "#define ETCPATH \"${sysconfdir}\"" >> ../include/path.h	
+	@echo "#define VARPATH \"${localstatedir}\"" >> ../include/path.h
+.PHONY: depend clean distclean
+depend:
+	${MKDEP} ${CPPFLAGS} ${SRCS} > .depend
+
+lint:
+	lint -aacgprxhH $(CPPFLAGS) $(SRCS) >../lint.out
+
+clean:
+	${RM} -f *.o *.exe *~ ircd.core core core.* ircd help2html mkenc
+
+distclean: clean
+	${RM} -f Makefile version.c.last codepage/*.cp
+
+include .depend
+

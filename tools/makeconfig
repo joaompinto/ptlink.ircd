@@ -1,0 +1,1274 @@
+#!/bin/bash
+# $Id: makeconfig,v 1.7 2005/08/27 16:23:50 jpinto Exp $
+# Just a script that I created when I was pretty bored
+# This script configures the dynamic configuration to your needs
+# -- ^Stinger^ --
+# TODO:
+# - Lot of restructuring (This is the first version, so hey.. it was quick scripted)
+# Thinking about:
+# - Generating ircd.conf
+#########
+# Version 1.0
+# - Configuring main.dconf and network.dconf
+# - Set Path
+# Version 1.1; Fixed var name types
+# Version 1.2; Add new options, Fixed some forgotten adds and typo's
+# Version 1.3; Add NetworkAUP option, and fixed a wrong question
+# Version 1.4; Fixed wrong directive on network.dconf
+# Version 1.5; Add NetworkDesc to the network.dconf
+#	       tmp file wasn't deleted on exit
+# Version 1.6; New Option HideConnectInfo Add
+# Version 1.7; Add some new options (yeah pretty late, but still they're there =))
+#              DisableStrongVlines,LockNickChange,EnableSelfKill,GlineOnExcessFlood,HideServicesServer 
+#              SecureModes,AllowSetNameToEveryone,OverwriteNetsplitMessage are add
+#              Fixed also some typos
+# Version 1.8; Removed OverwriteNetsplitMessage: Add the following: HideServerOnWhois, WhoisExtension, 
+#	       DisableLinksForUsers
+# Version 1.9; Updated GlineOnExcessFlood to new standard
+VERSION=1.9
+TEMPFILE=tmp
+TEMPPATH=tmppath
+MAINCONF=main.dconf
+NETCONF=network.dconf
+
+CANCEL=0
+YES=0
+OK=0
+NO=1
+ESC=-1
+ERROR=1
+
+# We need to check if we got everything that we need
+echo "Checking for \"dialog\"..."
+    DIALOG=`which dialog 2> /dev/null`
+    if [ -z $DIALOG ]; then
+	echo "No \"dialog\" found  :("
+	exit
+    else
+	echo "WHOEPIEE, we found \"dialog\"  :)"
+    fi
+
+echo "Checking for \"cat\"..."
+    CAT=`which cat 2> /dev/null`
+        if [ -z $CAT ]; then
+            echo "No \"cat\" found  :("
+    	    exit
+	else
+            echo "WHOEPIEE, we found \"cat\"  :)"
+        fi
+
+echo "Checking for \"cp\"..."
+    CP=`which cp 2> /dev/null`
+    if [ -z $CP ]; then
+	echo "No \"cp\" found  :("
+	exit
+    else
+	echo "WHOEPIEE, we found \"cp\"  :)"
+    fi
+
+echo "Checking for \"rm\"..."
+    RM=`which rm 2> /dev/null`
+        if [ -z $RM ]; then
+    	    echo "No \"rm\" found  :("
+	    exit
+	else
+    	    echo "WHOEPIEE, we found \"rm\"  :)"
+        fi
+								
+echo "Checking for \"clear\"..."
+    CLEAR=`which clear 2> /dev/null`
+        if [ -z $CLEAR ]; then
+            echo "No \"clear\" found  :("
+            exit
+        else
+            echo "WHOEPIEE, we found \"clear\"  :)"
+        fi
+echo "Checking for \"mv\"..."
+    MV=`which mv 2> /dev/null`
+        if [ -z $MV ]; then
+            echo "No \"mv\" found  :("
+            exit
+        else
+            echo "WHOEPIEE, we found \"mv\"  :)"
+        fi
+## Here ends the checking for certain files :)		
+# This part has some standard functions
+nopath() {
+$DIALOG \
+    --clear \
+    --title "ERROR!!!" \
+    --msgbox "You forgot to set the path of the ircd" 8 60
+}
+
+# Here end all the standard functions
+while [ 1 -lt 2 ]
+do
+$DIALOG \
+    --clear \
+    --title "Configuration Menu for PTlink Config files  Version: $VERSION" \
+    --menu "What do you want to configure" 20 75 12 \
+    01 "Set IRCd path" \
+    02 "Configure main.dconf" \
+    03 "Configure network.dconf" \
+    04 "Exit" \
+    2> temp.$$ || CANCEL=1
+    choice=$(exec $CAT temp.$$)
+    $RM temp.$$
+    
+if ( test $CANCEL -eq 1 ) then
+    if [ -f $TEMPPATH ]; then
+	$RM -f $TEMPPATH
+    fi
+exit 1
+fi
+
+case $choice in
+# Set the IRCd path
+01)
+if [ -f $TEMPPATH ]; then
+    $RM -f $TEMPPATH
+fi
+$DIALOG \
+    --clear \
+    --title "Path setting  Version: $VERSION" \
+    --inputbox "What is the path of the ircd" \
+    8 60 "$HOME/ircd" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "$RESULT" >> $TEMPPATH
+	    $RM -f $TEMPFILE
+	else
+	    exit 0
+	fi
+;;
+# This part is for writing the main.dconf
+02)
+# We first need to be sure that the network.dconf will be used, so simply just
+# write it to the main.dconf
+if [ ! -f $TEMPPATH ]; then
+    nopath
+else
+if [ -f $MAINCONF ]; then
+    $RM -f $MAINCONF
+fi
+echo ".include network.dconf" >> $MAINCONF
+$DIALOG \
+    --clear \
+    --title "main.dconf configuration  Version: $VERSION" \
+    --yesno "Do you want to make use of a reverse hostname lookup during client's connecting?" \
+    7 60
+	RESULT=$?    
+	if [ $RESULT -eq $YES ]; then
+	    echo "ReverseLookup	YES" >> $MAINCONF
+	else
+	    echo "ReverseLookup	NO" >> $MAINCONF
+	fi
+$DIALOG \
+    --clear \
+    --title "main.dconf configuration  Version: $VERSION" \
+    --yesno "Do you want to make use of ident lookup?" \
+    10 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "CheckIdentd	YES" >> $MAINCONF
+	else
+	    echo "CheckIdentd	NO" >> $MAINCONF
+	fi
+$DIALOG \
+    --clear \
+    --title "main.dconf configuration  Version: $VERSION" \
+    --yesno "Do you want to hide the conenct info?" \
+    10 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "HideConnectInfo	YES" >> $MAINCONF
+	else
+	    echo "HideConnectInfo	NO" >> $MAINCONF
+	fi    
+$DIALOG \
+    --clear \
+    --title "main.dconf configuration  Version: $VERSION" \
+    --inputbox "What should the file name be of the user helpfile?" \
+    8 60 "help.user" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "UserHelpFile	\"$RESULT\"" >> $MAINCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 1
+	fi
+$DIALOG \
+    --clear \
+    --title "main.dconf configuration  Version: $VERSION" \
+    --inputbox "What should the file name be of the oper helpfile?" \
+    8 60 "help.oper" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+    	    RESULT=`$CAT $TEMPFILE`
+    	    echo "OperHelpFile	\"$RESULT\"" >> $MAINCONF
+    	    $RM -f $TEMPFILE
+	else
+    	    exit 1
+	fi
+$DIALOG \
+    --clear \
+    --title "main.dconf configuration  Version: $VERSION" \
+    --inputbox "What should the file name be of the admin helpfile?" \
+    8 60 "help.admin" 2> $TEMPFILE
+        RESULT=$?
+        if [ $RESULT -eq $OK ]; then
+            RESULT=`$CAT $TEMPFILE`
+            echo "AdminHelpFile	\"$RESULT\"" >> $MAINCONF
+            $RM -f $TEMPFILE
+        else
+            exit 1
+        fi
+$DIALOG \
+    --clear \
+    --title "main.dconf configuration  Version: $VERSION" \
+    --yesno "Do you want to allow channel CTCP's. \n If NO, then only ops and voices can send CTCP's \n to the entire channel" \
+    8 60 
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "AllowChanCTCP	YES" >> $MAINCONF
+	else
+	    echo "AllowChanCTCP	NO" >> $MAINCONF
+	fi
+$DIALOG \
+    --clear \
+    --title "main.dconf configuration  Version: $VERSION" \
+    --inputbox "What should the interval be between repeated msg's send to a noflood (+d) channel?" \
+    8 60 "10" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "ChanFloodTime	$RESULT" >> $MAINCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 1
+	fi
+$DIALOG \
+    --clear \
+    --title "main.dconf Configuration  Version: $VERSION" \
+    --yesno "Do we want TimeZone checking? \n This needs other running ircds on foreign machines \n RECOMMEND: NO" \
+    10 60
+        RESULT=$?
+        if [ $RESULT -eq $YES ]; then
+            $DIALOG \
+                --clear \
+		--title "main.dconf Configuration  Version: $VERSION" \
+                --inputbox "What timeZone should we use" \
+                8 60 "GMT+0" 2> $TEMPFILE
+                    RESULT=$?
+                    if [ $RESULT -eq $OK ]; then
+                        RESULT=`$CAT $TEMPFILE`
+                        echo "TimeZone	\"$RESULT\"" >> $MAINCONF
+                        $RM -f $TEMPFILE
+                    else
+                        exit 0
+	            fi
+	fi	
+$DIALOG \
+    --title "main.dconf Configuration  Version: $VERSION" \
+    --clear \
+    --yesno "Do we want CloneDetection? This checks connections from the samehost during a set period, and they will be delayed with the set delay" \
+    10 60
+        RESULT=$?
+        if [ $RESULT -eq $YES ]; then
+            echo "CheckClones	YES" >> $MAINCONF
+	    $DIALOG \
+                --clear \
+		--title "main.dconf Configuration  Version: $VERSION" \
+                --inputbox "What do you want your clonelimit to be" \
+	        10 60 "3" 2> $TEMPFILE
+	        RESULT=$?
+		if [ $RESULT -eq $OK ]; then
+		    RESULT=`$CAT $TEMPFILE`
+		    echo "CheckClonesLimit	$RESULT" >> $MAINCONF
+		    $RM -f $TEMPFILE
+		else
+		    exit 0
+		fi
+    	    $DIALOG \
+		--clear \
+	        --title "main.dconf Configuration  Version: $VERSION" \
+		--inputbox "In what period should this check take place (DON'T forget a time indication at the end, s = seconds, m = minutes)" \
+		10 60 "15s" 2> $TEMPFILE
+		RESULT=$?
+		if [ $RESULT -eq $OK ]; then
+		    RESULT=`$CAT $TEMPFILE`
+		    echo "CheckClonesPeriod	$RESULT" >> $MAINCONF
+		    $RM -f $TEMPFILE
+		else
+		    exit 0
+		fi
+	    $DIALOG \
+		--clear \
+		--title "main.dconf Configuration  Version: $VERSION" \
+		--inputbox "What should the throttle time be (DON'T forget a time indication at the end, s = seconds, m = minutes)" \
+		10 60 "1m" 2> $TEMPFILE
+		RESULT=$?
+		if [ $RESULT -eq $OK ]; then
+		    RESULT=`$CAT $TEMPFILE`
+		    echo "CheckClonesDelay	$RESULT" >> $MAINCONF
+		    $RM -f $TEMPFILE
+		else
+		    exit 0
+		fi
+	    
+	else
+	    echo "CheckClones	NO" >> $MAINCONF
+	fi
+$DIALOG \
+    --clear \
+    --title "main.dconf Configuration  Version: $VERSION" \
+    --yesno "Do we want to have a check on target limit? This wil block users who are using too many different tagerts for privmsg/notice during a short period of time. Good option to block spammers" \
+    11 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "CheckTargetLimit	YES" >> $MAINCONF
+	else
+	    echo "CheckTargetLimit	NO" >> $MAINCONF
+	fi
+$DIALOG \
+    --clear \
+    --title "main.dconf Configuration  Version: $VERSION" \
+    --yesno "Do we want to have a check spam on target? The message will be checked for spamwords, if spamword or channelname will be found the user will get zombied." \    
+    11 60
+        RESULT=$?
+        if [ $RESULT -eq $YES ]; then
+            echo "CheckSpamOnTarget	YES" >> $MAINCONF
+        else
+            echo "CheckSpamOnTarget	NO" >> $MAINCONF
+        fi
+$DIALOG \
+    --clear \
+    --title "main.dconf Configuration  Version: $VERSION" \
+    --yesno "Do we want to enable DisableStrongVlines, if said yes, messages will nog be brought to lowercase and codstripped on vline checking. This will save (allot) CPU" \
+    11 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "DisableStrongVlines	YES" >> $MAINCONF
+	else
+	    echo "DisableStrongVlines	NO" >> $MAINCONF
+	fi
+$DIALOG \
+    --clear \
+    --title "main.dconf Configuration  Version: $VERSION" \
+    --inputbox "How many channels can a user can maximum join" \
+    7 60 "20" 2> $TEMPFILE
+        RESULT=$?
+        if [ $RESULT -eq $OK ]; then
+            RESULT=`$CAT $TEMPFILE`
+            echo "MaxChansPerUser	$RESULT" >> $MAINCONF
+            $RM -f $TEMPFILE 
+        else
+            exit 0
+        fi
+$DIALOG \
+    --clear \
+    --title "main.dconf Configuration  Version: $VERSION" \
+    --yesno "Do you want to have your timestamps to be adjusted with an offset calculated relative to the hub or services time during their connection?" \
+    10 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "UseIRCNTP	YES" >> $MAINCONF
+	else
+	    echo "UseIRCNTP	NO" >> $MAINCONF
+	fi
+$DIALOG \
+    --clear \
+    --title "main.dconf Configuration  Version: $VERSION" \
+    --inputbox "Path for unicode translation files" \
+	10 60 "codepage" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "CodePagePath		\"$RESULT\"" >> $MAINCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 1
+	fi
+$DIALOG \
+    --clear \
+    --title "main.dconf Configuration  Version: $VERSION" \
+    --inputbox "List of codepage files that should be loaded from CodePagePath, a .cp extension will be append to the file" \
+	10 60 "iso8859-1,iso8859-5,iso8859-9,cp1251,cp1253,cp850,cp860,cp866" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "CodePages \"$RESULT\"" >> $MAINCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 1
+	fi
+
+PATH=`$CAT $TEMPPATH`	
+if [ -f $PATH/$MAINCONF ]; then
+    $MV $PATH/$MAINCONF $PATH/$MAINCONF.backup
+fi
+$CP $MAINCONF $PATH
+fi
+;;
+
+# This part is for writing the network.dconf
+03)
+if [ ! -f $TEMPPATH ]; then
+    nopath
+else
+if [ -f $NETCONF ]; then
+    $RM -f $NETCONF
+fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What is your network name?" \
+    8 60 "PTlink" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "NetworkName	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What host should be advised when the server full or no authorization?" \
+    8 60 "irc.ptlink.net" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "RandomHost	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Do you want use of a network AUP?" \
+    8 60 
+    	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    $DIALOG \
+		--clear \
+		--title "network.dconf configuration  Version: $VERSION" \
+		--inputbox "What do you want to be your AUP notice" \
+		9 60 "Our network AUP can be found at http://www.ptlink.net/aup" 2> $TEMPFILE
+    		    RESULT=$?
+		    if [ $RESULT -eq $OK ]; then
+			RESULT=`$CAT $TEMPFILE`
+			echo "NetworkAUP	\"$RESULT\"" >> $NETCONF
+			$RM -f $TEMPFILE
+		    else
+			exit 0
+		    fi
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What is your network description?" \
+    8 60 "PTlink IRC Network" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "NetworkDesc	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What should be the name of your help channel? (Don't forget the # infront!!!)" \
+    8 60 "#PTlink" 2> $TEMPFILE
+        RESULT=$?
+        if [ $RESULT -eq $OK ]; then
+            RESULT=`$CAT $TEMPFILE`
+            echo "HelpChan	\"$RESULT\"" >> $NETCONF
+            $RM -f $TEMPFILE
+        else
+            exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What is the host of your services?" \
+    8 60 "Services.PTlink.net" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "ServicesServer	$RESULT" >> $NETCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Do you want to hide the ServicesServer on /LINKS?"\
+    10 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "HideServicesServer	YES"
+	else
+	    echo "HideServicesServer	NO"
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Do we want to force /service instead of /msg service, \n where service is the client name (e.g. NickServ) \n If said NO /service will still work" \
+    8 60 
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "ForceServicesAlias	YES" >> $NETCONF
+	else
+	    echo "ForceServicesAlias	NO" >> $NETCONF
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What should the interval be for services usage, to prevent flooding the services" \
+    9 60 "1m" 2> $TEMPFILE
+    	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "ServicesInterval	$RESULT" >> $NETCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What should usage count be for the services, to prevent flooding the services" \
+    9 60 "10" 2> $TEMPFILE
+    	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "ServicesUseCount	$RESULT" >> $NETCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Do we want channel admins to be prefixed with a '.' on the userlist?" \
+    9 60 
+    	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "AdminWithDot	YES" >> $NETCONF
+	else
+	    echo "AdminWithDot	NO" >> $NETCONF    
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "Which words should be blocked by the spamfilter (+S) on channel and quits, separate the words with a comma" \
+    9 60 "http,www.,/server" 2> $TEMPFILE
+    	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "SpamWords	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Do you want the Quit messages to be overriden by a NoQuit Message?" \
+    8 60 
+    	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    $DIALOG \
+		--clear \
+		--title "network.dconf configuration  Version: $VERSION" \
+		--inputbox "What should the exit message to be?" \
+		9 60 "No Quit Messages on this server" 2> $TEMPFILE
+    		    RESULT=$?
+		    if [ $RESULT -eq $OK ]; then
+			RESULT=`$CAT $TEMPFILE`
+			echo "NoQuitMsg	\"$RESULT\"" >> $NETCONF
+			$RM -f $TEMPFILE
+		    else
+			exit 0
+		    fi
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Do you want antispam messages enabled? With this you \ncan set minimum time to be connected to the server \nbefore sending a normal quit message" \
+    8 60 
+    	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    $DIALOG \
+		--clear \
+		--title "network.dconf configuration  Version: $VERSION" \
+		--inputbox "What should the exit message be?" \
+		9 60 "Not Enough Time Connected" 2> $TEMPFILE
+    		    RESULT=$?
+		    if [ $RESULT -eq $OK ]; then
+			RESULT=`$CAT $TEMPFILE`
+			echo "AntiSpamExitMsg	\"$RESULT\"" >> $NETCONF
+			$RM -f $TEMPFILE
+		    else
+			exit 0
+		    fi
+	    $DIALOG \
+		--clear \
+		--title "network.dconf configuration  Version: $VERSION" \
+		--inputbox "What should the minimal connect time be?" \
+		9 60 "2m" 2> $TEMPFILE
+    		    RESULT=$?
+		    if [ $RESULT -eq $OK ]; then
+			RESULT=`$CAT $TEMPFILE`
+			echo "AntiSpamExitTime	$RESULT" >> $NETCONF
+			$RM -f $TEMPFILE
+		    else
+			exit 0
+		    fi
+	fi
+
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Do you want exit messages to be checked on spamwords, so they can be replaced with our own quit?" \
+    9 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    $DIALOG \
+		--clear \
+		--title "network.dconf configuration  Version: $VERSION" \
+		--inputbox "What should the exit message be?" \
+		9 60 "No spam on this server" 2> $TEMPFILE
+    		    RESULT=$?
+    		    if [ $RESULT -eq $OK ]; then
+			RESULT=`$CAT $TEMPFILE`
+			echo "NoSpamExitMsg	\"$RESULT\"" >> $NETCONF
+			$RM -f $TEMPFILE
+		    else
+			exit 0
+		    fi	
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Do you want colored quit messages to be filtered and replaced with your own quit message?" \
+    9 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    $DIALOG \
+		--clear \
+		--title "network.dconf configuration  Version: $VERSION" \
+		--inputbox "What should the exit message be?" \
+		9 60 "Good client's don't use colored quits" 2> $TEMPFILE
+    		    RESULT=$?
+    		    if [ $RESULT -eq $OK ]; then
+			RESULT=`$CAT $TEMPFILE`
+			echo "NoColorsQuitMsg	\"$RESULT\"" >> $NETCONF
+			$RM -f $TEMPFILE
+		    else
+			exit 0
+		    fi	
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Do you want quit messages to have a QuitPrefix infront?" \
+    9 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    $DIALOG \
+		--clear \
+		--title "network.dconf configuration  Version: $VERSION" \
+		--inputbox "What should the QuitPrefix be?" \
+		9 60 "Quit: " 2> $TEMPFILE
+    		    RESULT=$?
+    		    if [ $RESULT -eq $OK ]; then
+			RESULT=`$CAT $TEMPFILE`
+			echo "QuitPrefix	\"$RESULT\"" >> $NETCONF
+			$RM -f $TEMPFILE
+		    else
+			exit 0
+		    fi	
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Do you want to filter out the quit messages of zombied users and replaced by one of your own?" \
+    9 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    $DIALOG \
+		--clear \
+		--title "network.dconf configuration  Version: $VERSION" \
+		--inputbox "What should the exit message be?" \
+		9 60 "Hmmzzz, it's spooky out there" 2> $TEMPFILE
+    		    RESULT=$?
+    		    if [ $RESULT -eq $OK ]; then
+			RESULT=`$CAT $TEMPFILE`
+			echo "ZombieQuitMsg	\"$RESULT\"" >> $NETCONF
+			$RM -f $TEMPFILE
+		    else
+			exit 0
+		    fi	
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Do you want to make use of host spoofing? This will protect user from DoS attacks" \
+    9 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "HostSpoofing	YES" >> $NETCONF
+		$DIALOG \
+		    --clear \
+		    --title "network.dconf configuration  Version: $VERSION" \
+		    --inputbox "What method of spoofing should be used? \n0 - prefixed checksum mask \n1 - crypt() mutation mask" \
+		    10 60 "0" 2> $TEMPFILE
+    		        RESULT=$?
+    		        if [ $RESULT -eq $OK ]; then
+			RESULT=`$CAT $TEMPFILE`
+			    echo "SpoofMethod	$RESULT" >> $NETCONF
+			    $RM -f $TEMPFILE
+			else
+			    exit 0
+			fi	
+		$DIALOG \
+		    --clear \
+		    --title "network.dconf configuration  Version: $VERSION" \
+		    --inputbox "What should we use as hostprefix?" \
+		    9 60 "PTlink" 2> $TEMPFILE
+    			RESULT=$?
+    			if [ $RESULT -eq $OK ]; then
+			    RESULT=`$CAT $TEMPFILE`
+			    echo "HostPrefix	\"$RESULT\"" >> $NETCONF
+			    $RM -f $TEMPFILE
+			else
+			    exit 0
+			fi	
+	else
+	    echo "HostSpoofing	NO" >> $NETCONF
+	fi
+
+#### PART FOR OPER HOSTS!!!!!!!
+$DIALOG \
+    --clear \
+    --title "main.dconf configuration  Version: $VERSION" \
+    --inputbox "Tech Admin Hostmask" \
+    10 60 "Tech@Admin.PTlink.net" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "TechAdminMask	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 1
+	fi
+$DIALOG \
+    --clear \
+    --title "main.dconf configuration  Version: $VERSION" \
+    --inputbox "Net Admin Hostmask" \
+    10 60 "Net@Admin.PTlink.net" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "NetAdminMask	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 1
+	fi
+$DIALOG \
+    --clear \
+    --title "main.dconf configuration  Version: $VERSION" \
+    --inputbox "Services Admin Hostmask" \
+    10 60 "Services@Admin.PTlink.net" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "SAdminMask	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 1
+	fi
+$DIALOG \
+    --clear \
+    --title "main.dconf configuration  Version: $VERSION" \
+    --inputbox "Server Admin Hostmask" \
+    10 60 "Server@Admin.PTlink.net" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "AdminMask	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 1
+	fi
+$DIALOG \
+    --clear \
+    --title "main.dconf configuration  Version: $VERSION" \
+    --inputbox "Oper Hostmask" \
+    10 60 "Oper@PTlink.net" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "OperMask	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 1
+	fi
+$DIALOG \
+    --clear \
+    --title "main.dconf configuration  Version: $VERSION" \
+    --inputbox "LocOp Hostmask" \
+    10 60 "Locop@PTlink.net" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "LocopMask	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 1
+	fi
+$DIALOG \
+    --clear \
+    --title "main.dconf configuration  Version: $VERSION" \
+    --inputbox "Helper Hostmask" \
+    10 60 "Helper.PTlink.net" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "HelperMask	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 1
+	fi		
+############
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Only registered nicks (umode +r) can use /oper" \
+    9 60 
+    	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "OnlyRegisteredOper	YES" >> $NETCONF
+	else
+	    echo "OnlyRegisterdOper	NO" >> $NETCONF    
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Opers can join all channels (+l/+k/+i) even when banned?" \
+    9 60 
+    	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "OperCanAlwaysJoin	YES" >> $NETCONF
+	else
+	    echo "OperCanAlwaysJoin	NO" >> $NETCONF    
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Opers can send to all channels?" \
+    9 60 
+    	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "OperCanAlwaysSend	YES" >> $NETCONF
+	else
+	    echo "OperCanAlwaysSend	NO" >> $NETCONF    
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Opers can change their host woth /NEWMASK ?" \
+    9 60 
+    	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "OperCanUseNewMask	YES" >> $NETCONF
+	else
+	    echo "OperCanUseNewMask	NO" >> $NETCONF    
+	fi	
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Oper can not be kicked by a normal user?" \
+    9 60 
+    	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "OperKickProtection	YES" >> $NETCONF
+	else
+	    echo "OperKickProtection	NO" >> $NETCONF    
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Oper is allowed to use Oper ByPass to join channels even when he can't, by using /join #channel (operbypasskey)?" \
+    9 60 
+    	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+		$DIALOG \
+		    --clear \
+		    --title "network.dconf configuration  Version: $VERSION" \
+		    --inputbox "What should the OperByPass key be?" \
+		    10 60 "operbypass" 2> $TEMPFILE
+    		        RESULT=$?
+    		        if [ $RESULT -eq $OK ]; then
+			RESULT=`$CAT $TEMPFILE`
+			    echo "OperByPass	\"$RESULT\"" >> $NETCONF
+			    $RM -f $TEMPFILE
+			else
+			    exit 0
+			fi
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Do you want to do /kill on your own nickname?" \
+    10 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "EnableSelfKill	YES" >> $NETCONF
+	else
+	    echo "EnableSelfKill 	NO" >> $NETCONF
+	fi	
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What should the CTCP reply be for not being able to send to the channel?" \
+    10 60 "cannot send CTCP's to channel" 2> $TEMPFILE
+        RESULT=$?
+        if [ $RESULT -eq $OK ]; then
+	RESULT=`$CAT $TEMPFILE`
+	    echo "NoCTCP_Msg	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What should the Moderate channel reply be?" \
+    10 60 "channel is moderated, you do not have a voice" 2> $TEMPFILE
+        RESULT=$?
+        if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "Moderated_Msg	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+    	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What should the No External Message reply be?" \
+    10 60 "channel does not allow external messages" 2> $TEMPFILE
+        RESULT=$?
+        if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "NoExternal_Msg	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+    	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What should the No Colors to channel reply be?" \
+    10 60 "channel does not allow mIRC/ANSI colors" 2> $TEMPFILE
+        RESULT=$?
+        if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "NoColors_Msg	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+    	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What should the banned from channel reply be?" \
+    10 60 "you are banned from this channel" 2> $TEMPFILE
+        RESULT=$?
+        if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "Banned_Msg	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+    	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What should the No Spam on channel reply be?" \
+    10 60 "no url/server messages allowed on this channel" 2> $TEMPFILE
+        RESULT=$?
+        if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "NoSpam_Msg	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+    	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What should the NoFlood msg be on NoFlood channels (+d mode)" \
+    10 60 "cannot send repeated messages to this channel" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "NoFlood_Msg	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What should the cannot DCC reply be?" \
+    10 60 "You cannot send files (possible virus infection)" 2> $TEMPFILE
+        RESULT=$?
+        if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "NoDCCSend_Msg	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+    	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What should the flood limit message be?, the %i will be replaced with the number of lines and number of seconds. DON'T FILL IN NUMBERS ON THE %i SPACES, they will be done by the server with the +f channelmode" \
+    10 60 "Flood! (%i lines in %i seconds)" 2> $TEMPFILE
+	RESULT=$?
+        if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "FloodLimit_Msg	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+    	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What should the part reason be for quitting be on a NoQuit (+q) channel" \
+    10 60 "Quit" 2> $TEMPFILE
+        RESULT=$?
+        if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "QModeMsg	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+    	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Do you want to disable nickchanges after connecting? This can be usefull for applet users" \
+    10 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "LockNickChange	YES" >> $NETCONF
+	else
+	    echo "LockNickChange	NO" >> $NETCONF
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Only Opers can create new channels, and +r channels will be \nkept open, even when empty NOTE: This should only be used with noexpire \nchannels. RECOMMEND: NO" \
+    13 60 
+	RESULT=$?
+        if [ $RESULT -eq $YES ]; then
+	    echo "RestrictedChans	YES" >> $NETCONF
+	    $DIALOG \
+		--clear \
+		--title "network.dconf configuration  Version: $VERSION" \
+		--inputbox "What should the Moderate reply be?" \
+		10 60 "Cannot create new channels on this network, please type list and join a existing one" 2> $TEMPFILE
+    		    RESULT=$?
+    		    if [ $RESULT -eq $OK ]; then
+			RESULT=`$CAT $TEMPFILE`
+			echo "RestrictedChansMsg \"$RESULT\"" >> $NETCONF
+			$RM -f $TEMPFILE
+    		    else
+			exit 0
+    		    fi
+	else
+	    echo "RestrictedChans	NO" >> $NETCONF
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What should be displayed in stead of normal Gline reason?" \
+    10 60 "Connection closed" 2> $TEMPFILE
+        RESULT=$?
+        if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "GLineOthersReason	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+    	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What should be displayed in stead of normal Kline reason?" \
+    10 60 "Connection closed" 2> $TEMPFILE
+        RESULT=$?
+        if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "KLineOthersReason	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+    	else
+	    exit 0
+	fi	
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What is the Gline time?" \
+    10 60 "10d" 2> $TEMPFILE
+        RESULT=$?
+        if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "DefaultGlineTime	$RESULT" >> $NETCONF
+	    $RM -f $TEMPFILE
+    	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "What is the Gline reason when no reason is given?" \
+    10 60 "Please read http://www.ptlink.net/aup/" 2> $TEMPFILE
+        RESULT=$?
+        if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "DefaultGLineReason	\"$RESULT\"" >> $NETCONF
+	    $RM -f $TEMPFILE
+    	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --inputbox "Do you want to use Gline on excess flooding? default this is 1 day, to disable use: 0d"
+    10 60 "1d" 2> $TEMPFILE
+	RESULT=$?
+	if [ $RESULT -eq $OK ]; then
+	    RESULT=`$CAT $TEMPFILE`
+	    echo "GlineOnExcessFlood	$RESULT" >> $NETCONF
+	    $RM -f $TEMPFILE
+	else
+	    exit 0
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Can users also use the /IRCOPS command?" \
+    9 60 
+    	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "IRCopsForAll	YES" >> $NETCONF
+	else
+	    echo "IRCopsForAll	NO" >> $NETCONF    
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Do you want IP's in stead of hostnames on user info for IRC Opers/Services?" \
+    9 60 
+    	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "IPIdentifyMode YES" >> $NETCONF
+	else
+	    echo "IPIdentifyMode NO" >> $NETCONF    
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Do you only want to allow setting modes on registrered channels?"
+    10 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "SecureModes	YES" >> $NETCONF
+	else
+	    echo "SecureModes	NO" >> $NETCONF
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf configuration  Version: $VERSION" \
+    --yesno "Do you want everyone to use the /SETNAME feature? Of No only opers can use it." \
+    10 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then 
+	    echo "AllowSetNameToEveryone	YES" >> $NETCONF
+	else
+	    echo "AllowSetNameToEveryOne	NO" >> $NETCONF
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf  Version: $VERSION" \
+    --yesno "Do you want to hide the servername on the whois?" \
+    10 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "HideServerOnWhois	YES" >> $NETCONF
+	else
+	    echo "HideServerOnWhois	No" >> $NETCONF
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf  Version: $VERSION" \
+    --yesno "Do you want to extend your whois with the usermodes and realhost for IRC operators?, users can only see their realhost" \
+    10 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "WhoisExtension	Yes" >> $NETCONF
+	else
+	    echo "WhoisExtension	No" >> $NETCONF
+	fi
+$DIALOG \
+    --clear \
+    --title "network.dconf  Version: $VERSION" \
+    --yesno "Do you want to disable /links for users?"
+    10 60
+	RESULT=$?
+	if [ $RESULT -eq $YES ]; then
+	    echo "DisableLinksForUsers	Yes" >> $NETCONF
+	else
+	    echo "DisableLinksForUsers	No" >> $NETCONF
+	fi
+
+PATH=`$CAT $TEMPPATH`
+if [ -f $PATH/$NETCONF ]; then
+    $MV $PATH/$NETCONF $PATH/$NETCONF.backup
+fi
+$CP $NETCONF $PATH
+fi
+;;
+# This is just to exit :)
+04)
+$RM -f $TEMPPATH $MAINCONF $NETCONF $TEMPFILE
+    $CLEAR
+    echo
+    echo
+    echo "Have a nice day!, you where using PTlink ConfigTool $VERSION"
+    echo
+    exit 0
+    ;;
+*)
+    $DIALOG \
+	--clear \
+	--title "ERROR!!" \
+	--msgbox "\n    Sorry, but this feature is not available.     " \
+	8 50
+    ;;
+esac    
+done
+

@@ -1,0 +1,50 @@
+*
+    Available Help Topics
+    -----------------
+    restart  - how to restart the ircd
+    close    - close unknown connections
+    die      - terminates the ircd
+    dconf    - dynamic conf handling
+    rehash   - rehash ircd data
+    redirect - redirect all local users to another server
+
+    Other
+    -----------------
+    help2html utility
+*help2html
+    help2html is a utility you can use to export your helpsys files
+    to html. To build the utility from the source directory type:
+         make help2html
+    This will build the src/help2html binary.
+    You can then test it with:
+         src/help2html samples/help.admin /tmp
+
+    Hope you enjoy it
+    Lamego@PTlink.net
+*redirect
+  + REDIRECT      - REDIRECT server
+                  Redirects all local user (except opers) to the 
+                  specified server on port 6667
+                  
+                  NOTE: The server must be connected to the network
+                  or match the RandomHost.
+*dconf
+  + DCONF       - DCONF <option>
+                  Restarts the IRC server.
+
+                  [option] can be one of the following:
+                    REHASH      - Will reread dynamic conf from main.dconf 
+                    LIST [mask] - List all .conf items matching mask
+                    SET [option] [value] - set value for option
+*restart
+  RESTART       - RESTART
+                  Restarts the IRC server.
+*close
+  CLOSE         - CLOSE
+                  Close any connections from clients who have not fully
+                  registered yet.
+*die
+  DIE           - DIE server.name [reason]
+                  Terminates the IRC server with optional reason
+                  [reason]
+*EOF*

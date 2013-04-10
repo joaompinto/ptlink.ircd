@@ -1,0 +1,2 @@
+The PTlink IRC Server protocol can be found at:
+http://software.pt-link.net/index.php?option=com_content&task=view&id=23&Itemid=41

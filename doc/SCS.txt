@@ -1,0 +1,37 @@
+****************************************************
+* SCS 1.0                                          *
+*--------------------------------------------------*
+* String Caching System                            *
+* Author: Lamego@PTlink.net                        *
+* Last revision: Tue 04 Jun 2002 09:03:40 PM WEST  *
+****************************************************
+
+SCS_CHK <ts> <count>
+
+SCS_SET <ts> id <message>
+
+SCS_MSG [-]id target 
+
+------------------------------------------------------
+m_scs_chk - cache check
+ gives info about cache state
+ if remote cache state has an higher priority
+   clear current cache and mark "wating for ts cache"
+   (we expect cache data from the other end)
+ else if remote cache is older than ours
+   send all messages with ts > remote ts
+ else if remote cache = ours
+  set source as synchronized 
+------------------------------------------------------
+m_scs_set - set cache entry
+  if remote ts is not the ts we are synchronizing with
+    return
+  set cache entry with new info
+  if set id is the last one on the cache
+    mark cache state as OK
+------------------------------------------------------    
+m_scs_msg - send cache message
+  if not is synchronized target
+    send to target the message 
+  else
+    send to target "SCS_MSG id target"

@@ -1,0 +1,72 @@
+Setting up an encrypted link.
+  You need OpenSSL at least version 0.9.6 installed.
+  Do a "make distclean" then a "./configure". You can keep
+  your existing config.h if you add the following lines:
+
+#define CRYPT_LINKS
+#define CRYPT_LINKS_CNPREFIX '@'
+#define CRYPT_LINKS_PRIVATEKEYFILE "private.key"
+
+  Then decide which ciphers you will support,
+  and what priority they have (lower value is preferred):
+
+#define CRYPT_BLOWFISH256 1 /* Blowfish 256-bit */
+#define CRYPT_BLOWFISH128 2 /* Blowfish 128-bit */
+#define CRYPT_CAST        3 /* CAST 128-bit */
+#define CRYPT_IDEA        4 /* IDEA 128-bit */
+#define CRYPT_RC5_16      5 /* 16 round RC5 128-bit */
+#define CRYPT_RC5_12      6 /* 12 round RC5 128-bit */
+#define CRYPT_3DES        7 /* Triple DES 168-bit */
+#define CRYPT_RC5_8       8 /* 8 round RC5 128-bit */
+#define CRYPT_DES         9 /* Standard DES 56-bit */
+
+  Do the "make" and "make install"
+
+  If you get problems with missing crypto functions when
+  linking (double or bad OpenSSL install), try cp'ing 
+  libssl.a libcrypto.a and libdescrypt.a to src/ and then 
+  manually specify these in src/Makefile
+  -l./libssl.a -l./libcrypto.a -l./libdescrypt.a
+  You might want to do same for tools/ if you need the
+  encryption speed test to compile.
+
+  Run the "mkkeypair" script found in the tools directory.
+  It will generate a private/public RSA key pair storing 
+  the keys in private.key and public.key. As with all
+  encryption, *guard the keys*, don't leave them floating
+  around on your boxes ;)
+
+  Copy the private.key to your ircd directory and give the 
+  public.key to the serveradmin you're about to link to.
+  Now, get your peers public key file, name it e.g.
+  irc.server.com.pubkey and put it in your ircd directory.
+  Edit the C/N lines, replace the password with 
+  @public.key.file, e.g. @irc.server.com.pubkey
+
+  C and N lines must both have the same file specified.
+
+  That's about it. Start your ircd and /connect, you will get
+  a ENC:<cipher>/<keysize>,<cipher>/<keysize> link established.
+  The first is the incoming data stream cipher, second is the
+  outgoing. /stats L and ? will show the encryption info as
+  well.
+  
+  The version char for this patch is 'b'
+
+
+May 15th, 2001
+
+einride <einride@einride.net>
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,191 @@
+#!/bin/sh
+# IRCD INSTALL SCRIPT
+# $Id: install_ircd,v 1.6 2005/08/27 16:23:50 jpinto Exp $
+#
+# Completely re-written by FlashMan <chuegen@quadrunner.com> 981231
+# Wow.  The old version was *very* messy and had boatloads of redundancy.
+# Fixed.
+#
+
+# Path to install-sh
+INSTALL_SH="autoconf/install-sh"
+
+#
+# dir_concat looks to see if we have an absolute or relative path
+# it echos $ETCPATH/<arg> if we have a relative path
+#
+dir_concat() {
+  if [ ! -z "`echo $1 | grep '^/'`" ]; then
+    echo $1;
+  else
+    echo ${ETCPATH}/$1;
+  fi;
+}
+
+#
+# dir_make attempts to make a directory tree using mkdir -p
+# Used to eliminate redundancy
+#
+dir_make() {
+  if [ \( ! -z "$1" \) -a \( ! -d "$1" \) ]; then
+    echo $1 does not exist, creating...
+    mkdir -p $1
+    if [ $? -ne 0 ]; then
+      echo Could not create directory path $1.
+      echo Perhaps you are not allowed to create a directory in the path.
+      echo Please fix and try again.
+      exit -1;
+    fi;
+  fi
+}
+#
+#
+#
+#
+check_install() {
+  if [ ! -f $1 ]; then
+	echo "- installing $2 --> $1"
+	$INSTALL_SH -c $2 $1;
+#  else
+#	echo "- $1 was found"
+  fi
+}
+
+check_install_data() {
+  if [ ! -f $1 ]; then
+	echo "- installing $2 --> $1"
+	$INSTALL_SH -m 660 -c $2 $1;
+#  else
+#	echo "* $1 was found"
+  fi
+}
+
+check_install_data_old() {
+  if [ ! -f $1 ]; then
+	echo "- installing $2 --> $1"
+  else
+	echo "- saving $1.old"
+	mv $1 $1.old
+  fi
+
+  $INSTALL_SH -m 660 -c $2 $1;
+}
+
+codepage_install() {
+  echo "- Encoding and installing codepages"
+  for i in `ls src/codepage/*.enc`; do src/mkenc $i; done
+  src/mkenc -t translit.enc
+  mv src/codepage/*.cp ${ETCPATH}/codepage
+}
+
+DIALOG=`which dialog 2> /dev/null`
+
+is_upgrade=0
+is_running=0
+BINPATH=`grep '#define.BINPATH' include/path.h|awk '{print $3}'|tr -d \"`;
+ETCPATH=`grep '#define.ETCPATH' include/path.h|awk '{print $3}'|tr -d \"`;
+VARPATH=`grep '#define.VARPATH' include/path.h|awk '{print $3}'|tr -d \"`;
+
+BINPATH="${BINPATH}"
+VARPATH="${VARPATH}"
+
+#   ETCPATH = configuration directory,
+#   BINPATH = server executable,
+#   VAR = log/variable files
+
+
+if [ -f src/ircd.exe ]; then
+  EXESUFFIX=".exe"
+else
+  EXESUFFIX=""
+fi
+clear
+echo "##########################################################################"
+echo "# PTlink6 - Installing ircd binary and example files                     #"
+echo "##########################################################################"
+# Let's make sure $ETCPATH exists
+dir_make ${BINPATH}
+dir_make ${ETCPATH}
+dir_make ${ETCPATH}/codepage
+dir_make ${VARPATH}
+dir_make ${VARPATH}/log
+echo - chmod 700 ${ETCPATH} ${ETCPATH}/codepage
+chmod 700 ${ETCPATH} ${ETCPATH}/codepage
+if [ ! -f src/ircd${EXESUFFIX} ]; then
+  echo "src/ircd${EXESUFFIX} was not found!"
+  echo "Please run \"make all\" to build ircd."
+  exit -1;
+fi
+
+# try to install the example files if needed
+
+check_install ${BINPATH}/mkpasswd${EXESUFFIX} tools/mkpasswd${EXESUFFIX}
+check_install_data ${ETCPATH}/ircd.conf samples/example.conf.short
+check_install_data ${ETCPATH}/ircd.motd samples/ptlink.motd
+check_install_data ${ETCPATH}/opers.motd samples/opers.motd
+check_install_data ${ETCPATH} samples/kline.conf
+check_install_data ${ETCPATH}/main.dconf samples/main.dconf.sample
+check_install_data ${ETCPATH}/network.dconf samples/network.dconf.sample
+check_install_data ${ETCPATH}/hvc.font samples/hvc.font
+if  [ "${EXESUFFIX}" != "" ]; then
+  check_install_data ${ETCPATH}/resolv.conf samples/resolv.conf.sample
+fi
+check_install_data_old ${ETCPATH}/help.user samples/help.user
+check_install_data_old ${ETCPATH}/help.oper samples/help.oper
+check_install_data_old ${ETCPATH}/help.admin samples/help.admin
+codepage_install
+
+# if ircd.pid is found lets kill thr running ircd
+# install ircd, save old one as ircd.old
+dir_make `dirname ${BINPATH}`
+echo "- installing ircd at ${BINPATH}"
+
+if [ -f ${VARPATH}/ircd.pid ] ; then
+  ircdpid=`cat ${VARPATH}/ircd.pid`;
+  if `kill -CHLD $ircdpid >/dev/null 2>&1`; then
+    is_running=1
+  fi
+fi
+if [ ! -f ${BINPATH}/ircd${EXESUFFIX} ]; then
+  $INSTALL_SH -c src/ircd${EXESUFFIX} ${BINPATH}/ircd${EXESUFFIX};
+else
+  if [ $is_running -eq 1 ] ; then
+    echo "- checking dconf settings"
+    src/ircd${EXESUFFIX} -s -c
+    if [ $? -eq 0 ] ; then
+      echo "- killing running ircd (wait 5s)"
+      kill $ircdpid  > /dev/null 2>&1
+      sleep 5
+      is_upgrade=1
+    else
+      echo "- aborting upgrade, fix your dconf settings first"
+      exit
+    fi
+  fi
+  echo "- saving existing ircd as ircd${EXESUFFIX}.old"
+  mv ${BINPATH}/ircd${EXESUFFIX} ${BINPATH}/ircd${EXESUFFIX}.old
+  $INSTALL_SH -c src/ircd${EXESUFFIX} ${BINPATH}/ircd${EXESUFFIX};
+fi
+
+if  [ "${EXESUFFIX}" = "" ]; then
+  VERSION=`grep '#define.PATCHLEVEL' include/patchlevel.h|awk '{print $3}'|tr -d \"`;
+  echo "${VERSION}" > ${ETCPATH}/version.info
+  check_install ${BINPATH}/sendbug tools/sendbug
+fi
+# finished.
+echo "Please edit the configuration files ${ETCPATH}/*.conf,*.dconf"
+if [ -n "$DIALOG" ]; then
+  echo "You can use the dialog based config tool for dconf setup: tools/makeconfig"
+fi
+echo "You can copy the rehash script from the tools directory to rehash the ircd from your shell"
+if [ $is_upgrade -eq 1 ]; then
+  echo "- running ircd"
+  ${BINPATH}/ircd${EXESUFFIX}
+  echo "Upgrade completed!"
+else
+  echo "Install completed!"
+
+  echo "Then execute ircd with ${BINPATH}/ircd${EXESUFFIX}"
+  echo
+fi
+

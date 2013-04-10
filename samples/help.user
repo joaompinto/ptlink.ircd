@@ -1,0 +1,67 @@
+*
+This help is available using /helpsys or /quote help
+
+    try /helpsys topic
+    Available topics
+    -----------------
+    umodes    - users modes
+    chanmodes - available channel modes
+    ircops    - how to find IRC Opers online
+    
+    For /list options type /list ?
+*umodes
+Users modes
+    B - user is a bot/screen
+    h - user is a IRC Helper
+    i - invisible mode (will not be seen in channels on 
+        /names from outsiders)
+    p - private user (hide channels from whois)
+    r - registered and identified nick
+    s - User is using a secure connection (SSL)
+    R - ignore private messages from non identified nicks
+    w - receive wallops (not used on this ircd)
+*chanmodes
+Channel modes
+    -- applied to nicks
+    o - user is channel operator can kick/deop other users
+    v - user is voiced, can send if channel is moderated
+    -- applied to nicks/mask
+    b - users matching mask cannot send to channel
+        and cannot join the channel
+    --  applied to channel
+    B - no bots allowed (+B nicks can't join without invite)
+    C - crypt only (only +s (ssl) users can join)
+    c - strips mIRC / ANSI colors on channel
+    d - don't repeat channel, blocks repeated messages
+    f - flood limit /mode (details with /helpsys floodlimit)
+    i - invite only channel, only invited users can join
+    k - key protected channel, usage /mode #chan +k key
+    K - knock mode, if channel is +k/+i a notice will be sent
+        to chanops  when a user fails to join the channel    
+    l - max users limited, usage /mode #chan +l number
+    m - moderated, only ops(@) and voices(+) can send messages
+    n - no external messages (user can only send messages to
+        the channel when joining the channel)
+    N - no nickname change mode, only channel operators and voice
+        can change their nickname
+    p - private channel (will not appear on /list)
+    q - no quit messages on this channel
+    R - only registered nicks can join
+    s - secret channel (will not appear on /whois)
+    S - no Spam mode, only allows messages containing  
+        */server* and urls from channel operators/voices.
+    t - only ops can change topic
+*ircops
+    To list all ircops online just type /quote ircops 
+*floodlimit
+    Channel mode +f detects channel flooders, and blocks their messages
+    Syntax:
+      /mode #channel +f x:f
+      x = lines
+      f = seconds
+    
+    Example:
+      /mode #xpto +f 5:10
+    An user will get his messages blocked after sending
+    more than 5 messages in 10 seconds.    
+*EOF*

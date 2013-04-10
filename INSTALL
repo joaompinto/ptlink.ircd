@@ -1,0 +1,60 @@
+PTlink6 INSTALL
+----------------
+As of PTlink6, the distribution uses gnu autoconf instead of the old
+configure script. 
+NOTE: For security sake you should not run PTlink IRCd with root,
+please create a normal user to install it.
+
+0.  Read the CHANGES file to find out about the new features 
+in this version.
+
+1.  Run the configure script.  It will create include/setup.h and the
+Makefiles to match your system:
+	./configure
+As default ircd will be installed to $HOME/ircd to specify a different
+  install directory use ./configure --prefix=path/to/install/dir
+
+2.  Edit the the "include/config.h" file.  This allows you to change
+various options of how the ircd will operate.  Notes: "HARD_FDLIMIT_"
+and "INIT_MAXCLIENTS" must be less than the maximum file descriptors
+per process allowed by your kernel, and must be <= FD_SETSIZE (usually
+defined in system includes, but may need to overridden in the Makefile.
+Note that the old OS definitions are gone, autoconf handles this now.
+Finally set the various PATHs to where you are going to install the ircd.
+Do not install the ircd to "."--the install script is not designed to
+install ircd properly on top of the existing source tree.
+
+3.  "make" should build ircd.
+
+4.  "make install" to install the server and tools in the path defined
+in config.h.
+NOTE: ircd will kill the running ircd if ircd.pid is found
+	  and launch the new one with the existing .conf files.
+
+5.
+  Edit ircd.conf and *.dconf files on your ircd/etc directory
+  
+HOW TO GET HELP:
+----------------
+ [ http://software.pt-link.net/ ]
+ 
+1.  Check the file ircd.log 
+  ( Learn english if you don't understand the problem :P )
+
+2. Post your question on PTlink Coders forum on the web page.
+
+3. The support/suggestions channel
+Connect to irc.ptlink.net:6667 and join #PTC (english only).
+
+SUCCESSFULLY COMPILED ON:
+-------------------------
+FreeBSD 4.x (x86)
+Linux2.2.x (x86)
+Linux2.4.x (x86/PPC)
+Linux2.6.x (x86)
+Solaris 8 (sparc)
+OpenBSD2.9 & 3.0
+HP-UX 11 with gcc (HP9000/8xx)
+HP-UX 11i with an ANSI C compiler
+Mac OS X 10.1 with "autoconf; ./configure --build=ppc" (PPC - G4)
+Cygwin

@@ -1,0 +1,16 @@
+all.of.the.following.should.match *
+blarg!~foo@test.org *!*@test.org
+flarn!foo@test.org ?*.org
+blah@merde.com blah@me?*
+woof *
+!luser@ppp.lame.org *!*@ppp*?
+honk ?o*?
+balderdash!brouhaha@ballyhoo.org bal*!*@*.org
+dumb dumb
+x ?
+dd ?d
+ccjy ?*j?
+a *
+aaaaaaaaa a*
+baaaaaaaaaaaab b*b
+~shaft@isaac.badass.net *?a*c*b*?
